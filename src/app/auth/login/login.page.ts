@@ -1,8 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, StatusChangeEvent, TouchedChangeEvent, Validators, } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput, IonIcon} from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/services/auth.service';
 import { filter, map, Observable } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -10,7 +9,7 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [IonicModule, ReactiveFormsModule, CommonModule],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput, ReactiveFormsModule, CommonModule],
     template: `
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <ion-header>

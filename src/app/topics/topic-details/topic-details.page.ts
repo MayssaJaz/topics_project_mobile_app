@@ -21,6 +21,7 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, tap } from 'rxjs';
 import { generateUUID } from 'src/app/utils/generate-uuid';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonBreadcrumb, IonBreadcrumbs, IonIcon, IonImg, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonSpinner } from '@ionic/angular/standalone';
 
 addIcons({ addOutline, chevronForward, ellipsisVertical });
 
@@ -105,7 +106,7 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
     `,
   ],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterLink],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonBreadcrumb, IonBreadcrumbs, IonIcon, IonImg, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonSpinner, CommonModule, FormsModule, RouterLink],
 })
 export class TopicDetailsPage implements OnInit {
   private readonly topicService = inject(TopicService);

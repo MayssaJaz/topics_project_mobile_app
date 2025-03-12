@@ -11,6 +11,7 @@ import { CreateTopicModal } from './modals/create-topic/create-topic.component';
 import { ItemManagementPopover } from './popover/item-management/item-management.component';
 import { Topic } from '../models/topic';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonBreadcrumb, IonBreadcrumbs, IonIcon, IonImg, IonList, IonItem, IonLabel, IonFab, IonFabButton} from '@ionic/angular/standalone';
 
 addIcons({ addOutline, chevronForward, ellipsisVertical });
 
@@ -82,7 +83,7 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
       }
     `,
   ],
-  imports: [IonicModule, CommonModule, RouterLink],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonBreadcrumb, IonBreadcrumbs, IonIcon, IonImg, IonList, IonItem, IonLabel, IonFab, IonFabButton, RouterLink, CommonModule],
 })
 export class TopicsPage {
   private readonly topicService = inject(TopicService);
