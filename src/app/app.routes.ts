@@ -16,7 +16,7 @@ const isAuthenticated = () => {
 export const routes: Routes = [
   {
     path: 'topics',
-    //canActivate: [isAuthenticated],
+    canActivate: [isAuthenticated],
 
     loadComponent: () =>
       import('./topics/topics.page').then((m) => m.TopicsPage),
@@ -37,5 +37,9 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () =>
       import('./auth/login/login.page').then((m) => m.LoginPage),
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./auth/register/register.page').then( m => m.RegisterPage)
   },
 ];
