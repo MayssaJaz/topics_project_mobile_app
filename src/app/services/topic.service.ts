@@ -70,41 +70,10 @@ export class TopicService {
   
 
   async editPost(topicId: string, post: Post): Promise<void> {
-    await setDoc(doc(this.firestore, `topics/${topicId}/posts`), post);
-
-   /*
-    // Update the post in Firestore
-    await setDoc(doc(this.firestore, `posts/${post.id}`), post);
-  
-    // Get the topic (resolve the Observable)
-    const topic = await firstValueFrom(this.getById(topicId));
-  
-    if (topic) {
-      // Ensure posts exist and update only the relevant post
-      const updatedPosts = (topic.posts || []).map((_post) =>
-        _post.id === post.id ? post : _post
-      );
-  
-      // Save the updated topic
-      await this.editTopic({
-        id: topicId,
-        name: topic.name,
-        posts: updatedPosts, // Ensuring proper update
-      });
-    }
-      */
+    await setDoc(doc(this.firestore, `topics/${topicId}/posts/${post.id}`), post);
   }
   
   removePost(topicId: string, post: Post): void {
-    /*this._topics.next(
-      this._topics.value.map((topic) =>
-        topic.id === topicId
-          ? {
-              ...topic,
-              posts: topic.posts.filter((_post) => _post.id !== post.id),
-            }
-          : topic
-      )
-    );*/
+    deleteDoc(doc(this.firestore, `topics/${topicId}/posts/${post.id}`));
   }
 }

@@ -136,6 +136,7 @@ export class CreatePostModal implements OnInit {
       this.topicService.editPost(this.topicId, {
         ...this.post,
         name: this.postForm.value.name!,
+        description: this.postForm.value.description!
       });
     } else {
       this.topicService.addPost(this.topicId, {
