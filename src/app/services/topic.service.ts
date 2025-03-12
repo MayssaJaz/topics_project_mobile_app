@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Topic, Topics } from '../models/topic';
 import { Post } from '../models/post';
 import { generateUUID } from '../utils/generate-uuid';
-import { BehaviorSubject, map, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, map, Observable, of, tap, firstValueFrom} from 'rxjs';
 import {
   Firestore,
   collection,
@@ -10,7 +10,8 @@ import {
   addDoc,
   setDoc,
   doc,
-  docData
+  docData,
+  deleteDoc
 } from '@angular/fire/firestore';
 
 @Injectable({
@@ -19,21 +20,15 @@ import {
 export class TopicService {
   private firestore = inject(Firestore);
   topicsCollection = collection(this.firestore, 'topics');
+  postsCollection = collection(this.firestore, 'posts');
   //doc(topicsCollection);
-
-  private _topics: BehaviorSubject<Topics> = new BehaviorSubject([
-    { id: '1', name: 'Topic 1', posts: [{ id: '1', name: 'Post 1' }] },
-    { id: '2', name: 'Topic 2', posts: [] },
-  ]);
 
   getAll(): Observable<Topics> {
     return (collectionData(this.topicsCollection, {idField: 'id'}) as Observable<Topic[]>)
   }
 
   getById(topicId: string): Observable<Topic | undefined> {
-    return this._topics.pipe(
-      map((topics) => topics.find((topic) => topic.id === topicId))
-    );
+    return docData(doc(this.firestore, `topics/${topicId}`), { idField: 'id' }) as Observable<Topic | undefined>;
   }
 
   addTopic(topic: Omit<Topic, 'id' | 'posts'>): void {
@@ -52,9 +47,7 @@ export class TopicService {
   }
 
   editTopic(topic: Topic): void {
-    console.log("Editing topic with ID:", topic.id);
-    const topicDoc = doc(this.firestore, `topics/${topic.id}`)
-    setDoc(topicDoc, topic )
+    setDoc(doc(this.firestore, `topics/${topic.id}`), topic);
     //setDoc(this.topicsCollection, topic)
     /*this._topics.next(
       this._topics.value.map((_topic) =>
@@ -64,41 +57,46 @@ export class TopicService {
   }
 
   removeTopic(topic: Topic): void {
-    this._topics.next(
+    deleteDoc(doc(this.firestore, `topics/${topic.id}`));
+    /*this._topics.next(
       this._topics.value.filter((_topic) => _topic.id !== topic.id)
-    );
+    );*/
   }
 
-  addPost(topicId: string, post: Omit<Post, 'id'>): void {
-    this._topics.next(
-      this._topics.value.map((topic) =>
-        topic.id === topicId
-          ? {
-              ...topic,
-              posts: [...topic.posts, { ...post, id: generateUUID() }],
-            }
-          : topic
-      )
-    );
-  }
+  async addPost(topicId: string, post: Omit<Post, 'id'>): Promise<void> {
+    const postsCollectionRef = collection(this.firestore, `topics/${topicId}/posts`);
+    await addDoc(postsCollectionRef, post);
+}
+  
 
-  editPost(topicId: string, post: Post): void {
-    this._topics.next(
-      this._topics.value.map((topic) =>
-        topic.id === topicId
-          ? {
-              ...topic,
-              posts: topic.posts.map((_post) =>
-                _post.id === post.id ? { ...post, id: _post.id } : _post
-              ),
-            }
-          : topic
-      )
-    );
-  }
+  async editPost(topicId: string, post: Post): Promise<void> {
+    await setDoc(doc(this.firestore, `topics/${topicId}/posts`), post);
 
+   /*
+    // Update the post in Firestore
+    await setDoc(doc(this.firestore, `posts/${post.id}`), post);
+  
+    // Get the topic (resolve the Observable)
+    const topic = await firstValueFrom(this.getById(topicId));
+  
+    if (topic) {
+      // Ensure posts exist and update only the relevant post
+      const updatedPosts = (topic.posts || []).map((_post) =>
+        _post.id === post.id ? post : _post
+      );
+  
+      // Save the updated topic
+      await this.editTopic({
+        id: topicId,
+        name: topic.name,
+        posts: updatedPosts, // Ensuring proper update
+      });
+    }
+      */
+  }
+  
   removePost(topicId: string, post: Post): void {
-    this._topics.next(
+    /*this._topics.next(
       this._topics.value.map((topic) =>
         topic.id === topicId
           ? {
@@ -107,6 +105,6 @@ export class TopicService {
             }
           : topic
       )
-    );
+    );*/
   }
 }

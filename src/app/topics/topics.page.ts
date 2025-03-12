@@ -52,7 +52,6 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
           <ion-label [routerLink]="['/topics/' + topic.id]">{{
             topic.name
           }}</ion-label>
-          <ion-note slot="end">{{ topic?.posts?.length }}</ion-note>
           <ion-icon
             slot="end"
             [routerLink]="['/topics/' + topic.id]"
