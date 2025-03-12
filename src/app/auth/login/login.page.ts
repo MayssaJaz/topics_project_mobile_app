@@ -63,9 +63,6 @@ export class LoginPage {
 
   readonly PASSWORD_MIN_LENGTH = 4;
 
-  userEmail: string | undefined;
-  userPassword: string  | undefined;
-
   loginForm = this.fb.group({
     password: [
       '',
@@ -123,8 +120,8 @@ export class LoginPage {
   }
 
   async onSubmit(): Promise<void> {
-    if (this.userEmail && this.userPassword) {
-      const result = await this.authService.login(this.userEmail, this.userPassword);
+    if (this.loginForm.value.email && this.loginForm.value.password) {
+      const result = await this.authService.login(this.loginForm.value.email, this.loginForm.value.password);
       if(result?.user?.email) {
           this.router.navigate(['/topics']);
       }
