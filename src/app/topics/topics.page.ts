@@ -7,12 +7,18 @@ import { addIcons } from 'ionicons';
 import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
 import { ModalController } from '@ionic/angular/standalone';
 import { PopoverController } from '@ionic/angular/standalone';
+import { UserPopoverComponent } from './popover/user-management/user-management.component';
 import { CreateTopicModal } from './modals/create-topic/create-topic.component';
 import { ItemManagementPopover } from './popover/item-management/item-management.component';
 import { Topic } from '../models/topic';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { tap } from 'rxjs';
 
-addIcons({ addOutline, chevronForward, ellipsisVertical });
+addIcons({
+  addOutline,
+  chevronForward,
+  ellipsisVertical,
+});
 
 @Component({
   selector: 'app-home',
@@ -22,6 +28,12 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
         <ion-breadcrumbs>
           <ion-breadcrumb routerLink="">Topics</ion-breadcrumb>
         </ion-breadcrumbs>
+
+        <ion-buttons slot="end">
+          <ion-button (click)="presentUserPopover($event)">
+            <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
@@ -32,7 +44,7 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
         </ion-toolbar>
       </ion-header>
 
-      <ion-list>
+      <ion-list *ngIf="!loading(); else loadingTemplate">
         @for(topic of topics(); track topic.id) {
         <ion-item>
           <ion-button
@@ -63,6 +75,13 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
         <ion-img class="image" src="assets/img/no_data.svg" alt=""></ion-img>
         }
       </ion-list>
+      <ng-template #loadingTemplate>
+        <ion-spinner
+          name="bubbles"
+          color="tertiary"
+          class="loading-spinner"
+        ></ion-spinner>
+      </ng-template>
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button
           data-cy="open-create-topic-modal-button"
@@ -80,6 +99,11 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
         width: 50%;
         margin: auto;
       }
+      .loading-spinner {
+        display: block;
+        margin: auto;
+        margin-top: 50px;
+      }
     `,
   ],
   imports: [IonicModule, CommonModule, RouterLink],
@@ -88,8 +112,10 @@ export class TopicsPage {
   private readonly topicService = inject(TopicService);
   private readonly modalCtrl = inject(ModalController);
   private readonly popoverCtrl = inject(PopoverController);
-
-  topics = toSignal(this.topicService.getAll());
+  loading = signal<boolean>(true);
+  topics = toSignal<Topic[]>(
+    this.topicService.getAll().pipe(tap(() => this.loading.set(false)))
+  );
 
   async openModal(topic?: Topic): Promise<void> {
     const modal = await this.modalCtrl.create({
@@ -99,6 +125,17 @@ export class TopicsPage {
     modal.present();
 
     await modal.onDidDismiss();
+  }
+
+  async presentUserPopover(event: Event) {
+    const popover = await this.popoverCtrl.create({
+      component: UserPopoverComponent,
+      event,
+      showBackdrop: true,
+      translucent: true,
+    });
+
+    await popover.present();
   }
 
   async presentTopicManagementPopover(event: Event, topic: Topic) {

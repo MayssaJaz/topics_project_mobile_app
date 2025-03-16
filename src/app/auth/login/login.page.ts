@@ -40,6 +40,7 @@ import { Router } from '@angular/router';
             formControlName="password"
             fill="solid"
             name="password"
+            type="password"
             label="Enter login password"
             labelPlacement="floating"
             placeholder="login password"
@@ -123,6 +124,7 @@ export class LoginPage {
     if (this.loginForm.value.email && this.loginForm.value.password) {
       const result = await this.authService.login(this.loginForm.value.email, this.loginForm.value.password);
       if(result?.user?.email) {
+        this.loginForm.reset();
           this.router.navigate(['/topics']);
       }
     }

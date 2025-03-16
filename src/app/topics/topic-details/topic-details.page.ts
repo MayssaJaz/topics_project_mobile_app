@@ -21,6 +21,7 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, tap } from 'rxjs';
 import { generateUUID } from 'src/app/utils/generate-uuid';
+import { UserPopoverComponent } from '../popover/user-management/user-management.component';
 
 addIcons({ addOutline, chevronForward, ellipsisVertical });
 
@@ -35,7 +36,14 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
             topic()?.name
           }}</ion-breadcrumb>
         </ion-breadcrumbs>
+                <ion-buttons slot="end">
+          <ion-button (click)="presentUserPopover($event)">
+            <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
+
+      
     </ion-header>
 
     <ion-content [fullscreen]="true">
@@ -143,6 +151,15 @@ export class TopicDetailsPage implements OnInit {
     await modal.present();
     await modal.onDidDismiss();
   }
+
+    async presentUserPopover(event: Event) {
+      const popover = await this.popoverCtrl.create({
+        component: UserPopoverComponent,
+        event,
+        translucent: true,
+      });
+      await popover.present();
+    }
 
   async presentPostManagementPopover(event: Event, post: Post): Promise<void> {
     const popover = await this.popoverCtrl.create({
