@@ -13,10 +13,11 @@ import { ModalController } from '@ionic/angular/standalone';
 import { Post } from 'src/app/models/post';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Observable, filter, map } from 'rxjs';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-create-post',
-  imports: [IonicModule, ReactiveFormsModule],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput, ReactiveFormsModule],
   template: `
     <form [formGroup]="postForm" (ngSubmit)="onSubmit()">
       <ion-header>

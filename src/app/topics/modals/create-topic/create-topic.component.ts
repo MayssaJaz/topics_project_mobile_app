@@ -8,16 +8,16 @@ import {
   TouchedChangeEvent,
   Validators,
 } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { TopicService } from 'src/app/services/topic.service';
 import { ModalController } from '@ionic/angular/standalone';
 import { Topic } from 'src/app/models/topic';
 import { CommonModule } from '@angular/common';
 import { Observable, filter, map } from 'rxjs';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-create-topic',
-  imports: [IonicModule, ReactiveFormsModule, CommonModule],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput, ReactiveFormsModule, CommonModule],
   template: `
     <form [formGroup]="topicForm" (ngSubmit)="onSubmit()">
       <ion-header>
