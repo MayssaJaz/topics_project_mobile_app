@@ -3,7 +3,7 @@ import { Auth, createUserWithEmailAndPassword, sendEmailVerification, sendPasswo
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Client } from '../models/client';
-import { addDoc, collection, doc, docData, Firestore } from '@angular/fire/firestore';
+import { addDoc, collection, collectionData, doc, docData, Firestore } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +14,12 @@ export class AuthService {
   private router = inject(Router);
   private ngZone = inject(NgZone);
   usersCollection = collection(this.firestore, 'users');
+  
+  getAllUsers(): Observable<User[]> {
+    return collectionData(this.usersCollection, {
+      idField: 'id',
+    }) as Observable<User[]>;
+  }
   
   getAuth(): Observable<User | null> {
     return user(this.auth);

@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Topic, Topics } from '../models/topic';
 import { Post } from '../models/post';
 import { generateUUID } from '../utils/generate-uuid';
-import { Observable } from 'rxjs';
+import { firstValueFrom, map, Observable, switchMap } from 'rxjs';
 import {
   Firestore,
   collection,
@@ -12,19 +12,37 @@ import {
   doc,
   docData,
   deleteDoc,
+  where,
+  query,
 } from '@angular/fire/firestore';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TopicService {
   private firestore = inject(Firestore);
+  private _authService = inject(AuthService);
   topicsCollection = collection(this.firestore, 'topics');
 
   getAll(): Observable<Topics> {
-    return collectionData(this.topicsCollection, {
-      idField: 'id',
-    }) as Observable<Topic[]>;
+    const user$ = this._authService.getConnectedUser();
+
+    return user$.pipe(
+      switchMap((user) => {
+
+        const whereUserIsownerTopics = query(
+          this.topicsCollection,
+          where('owner', '==', user?.uid)
+        );
+
+        return collectionData(whereUserIsownerTopics, {
+          idField: 'id',
+        }) as Observable<Topic[]>;
+
+      })
+    )
+    
   }
 
   getById(topicId: string): Observable<Topic | undefined> {
@@ -33,12 +51,21 @@ export class TopicService {
     }) as Observable<Topic | undefined>;
   }
 
-  addTopic(topic: Omit<Topic, 'id' | 'posts'>): void {
+  async addTopic(topic: Omit<Topic, 'id' | 'posts'>): Promise<void> {
+    const ownerId = await firstValueFrom(this.getUserId());
+
     addDoc(this.topicsCollection, <Topic>{
       ...topic,
       id: generateUUID(),
       posts: [],
+      owner:ownerId
     });
+  }
+  
+  getUserId(): Observable<string | undefined> {
+    return this._authService.getConnectedUser().pipe(
+      map((user) => user?.uid)
+    );
   }
 
   editTopic(topic: Topic): void {
