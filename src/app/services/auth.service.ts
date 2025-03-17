@@ -1,9 +1,9 @@
 import { NgZone, inject, Injectable } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, user, User, UserCredential } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import { Client } from '../models/client';
-import { addDoc, collection, collectionData, doc, docData, Firestore } from '@angular/fire/firestore';
+import { addDoc, collection, collectionData, doc, docData, endAt, Firestore, orderBy, query, setDoc, startAt, where } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -29,16 +29,18 @@ export class AuthService {
     return user(this.auth);
   }
 
-  async addUser(user: Omit<Client, 'users'>): Promise<void> {
+  async addUser(user: Omit<Client, 'users'| 'uid'>, uid: string): Promise<void> {
     const safeUser: Client = {
+      uid,
       email: user.email ?? "",
       name: user.name ?? "",
       family_name: user.family_name ?? "",
       logo: user.logo ?? null, 
     };
   
-    await this.ngZone.run(() => addDoc(this.usersCollection, safeUser));
+    await this.ngZone.run(() => setDoc(doc(this.usersCollection, uid), safeUser));
   }
+  
 
   getUserByEmail(email: string): Observable<Client | undefined> {
     return docData(doc(this.firestore, `users/${email}`), { idField: 'email' }) as Observable<Client | undefined>;
@@ -55,7 +57,7 @@ export class AuthService {
         family_name,
         logo: null
       }
-      await this.addUser(user);
+      await this.addUser(user, result.user.uid);
       return this.logout();
     }
   }
@@ -74,5 +76,46 @@ export class AuthService {
     return sendPasswordResetEmail(this.auth, email)
   }
 
+  getUsersByPartialNameOrEmail(search: string): Observable<Client[]> {
+    if (!search.trim()) return new Observable<Client[]>();
+  
+    search = search.toLowerCase();
+    const endSearch = search + '\uf8ff';
+  
+    const nameQuery = query(
+      this.usersCollection,
+      orderBy('name'),
+      startAt(search),
+      endAt(endSearch)
+    );
+  
+    const emailQuery = query(
+      this.usersCollection,
+      orderBy('email'),
+      startAt(search),
+      endAt(endSearch)
+    );
+  
+    return combineLatest([
+      collectionData(nameQuery, { idField: 'uid' }) as Observable<Client[]>,
+      collectionData(emailQuery, { idField: 'uid' }) as Observable<Client[]>,
+    ]).pipe(
+      map(([nameResults, emailResults]) => {
+        const mergedResults = [...nameResults, ...emailResults];
+        return mergedResults.filter(
+          (user, index, self) =>
+            index === self.findIndex((u) => u.uid === user.uid)
+        );
+      })
+    );
+  }
+  
+  getUserById(userId: string): Observable<Client | null> {
+    const userDocRef = doc(this.firestore, `users/${userId}`);
+    return docData(userDocRef, { idField: 'uid' }) as Observable<Client | null>;
+  }
+
   constructor() {}
 }
+
+

@@ -42,7 +42,7 @@ export class TopicService {
 
       })
     )
-    
+
   }
 
   getById(topicId: string): Observable<Topic | undefined> {
@@ -52,13 +52,11 @@ export class TopicService {
   }
 
   async addTopic(topic: Omit<Topic, 'id' | 'posts'>): Promise<void> {
-    const ownerId = await firstValueFrom(this.getUserId());
 
     addDoc(this.topicsCollection, <Topic>{
       ...topic,
       id: generateUUID(),
       posts: [],
-      owner:ownerId
     });
   }
   

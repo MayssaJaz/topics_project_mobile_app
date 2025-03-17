@@ -3,6 +3,7 @@ export interface Client {
     name: string;
     family_name: string;
     logo?: string | null;
+    uid: string;
   }
   
   export type Clients = Client[];
