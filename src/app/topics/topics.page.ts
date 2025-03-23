@@ -5,8 +5,14 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
-import { ModalController } from '@ionic/angular/standalone';
-import { PopoverController } from '@ionic/angular/standalone';
+import {
+  ModalController,
+  IonList,
+  IonListHeader,
+  IonSkeletonText,
+  IonThumbnail,
+  PopoverController,
+} from '@ionic/angular/standalone';
 import { UserPopoverComponent } from './popover/user-management/user-management.component';
 import { CreateTopicModal } from './modals/create-topic/create-topic.component';
 import { ItemManagementPopover } from './popover/item-management/item-management.component';
@@ -76,11 +82,39 @@ addIcons({
         }
       </ion-list>
       <ng-template #loadingTemplate>
-        <ion-spinner
-          name="bubbles"
-          color="tertiary"
-          class="loading-spinner"
-        ></ion-spinner>
+        <ion-list>
+          <ion-list-header>
+            <ion-skeleton-text
+              [animated]="true"
+              style="width: 80px"
+            ></ion-skeleton-text>
+          </ion-list-header>
+          <ion-item>
+            <ion-thumbnail slot="start">
+              <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+            </ion-thumbnail>
+            <ion-label>
+              <h3>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 80%;"
+                ></ion-skeleton-text>
+              </h3>
+              <p>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 60%;"
+                ></ion-skeleton-text>
+              </p>
+              <p>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 30%;"
+                ></ion-skeleton-text>
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
       </ng-template>
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button
@@ -106,7 +140,11 @@ addIcons({
       }
     `,
   ],
-  imports: [IonicModule, CommonModule, RouterLink],
+  imports: [
+    IonicModule,
+    CommonModule,
+    RouterLink,
+  ],
 })
 export class TopicsPage {
   private readonly topicService = inject(TopicService);

@@ -8,6 +8,7 @@ import {
   logOutOutline
 } from 'ionicons/icons';
 import { AuthService } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
 addIcons({
   personCircleOutline,
   createOutline,
@@ -35,9 +36,10 @@ addIcons({
 export class UserPopoverComponent {
   constructor(private popoverCtrl: PopoverController) {}
   private readonly authService = inject(AuthService);
+  private router = inject(Router);
 
   editProfile() {
-    console.log('Edit Profile Clicked');
+    this.router.navigate(['/edit-profile'])
     this.popoverCtrl.dismiss();
   }
 
