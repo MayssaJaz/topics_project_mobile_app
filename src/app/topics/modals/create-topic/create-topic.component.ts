@@ -13,19 +13,22 @@ import { TopicService } from 'src/app/services/topic.service';
 import { ModalController } from '@ionic/angular/standalone';
 import { Topic } from 'src/app/models/topic';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 import { Observable, filter, firstValueFrom, map, of } from 'rxjs';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput, IonList, IonChip, IonItem, IonIcon, IonLabel} from '@ionic/angular/standalone';
+import { Category } from 'src/app/models/topic';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from '@angular/fire/auth';
 import { Client } from 'src/app/models/client';
 import { addIcons } from 'ionicons';
 import { closeCircle } from 'ionicons/icons';
+
 addIcons({
-  closeCircle
+  closeCircle,
 });
+
 @Component({
   selector: 'app-create-topic',
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput, ReactiveFormsModule, CommonModule, IonList, IonChip, IonItem, IonIcon, IonLabel],
+  imports: [ReactiveFormsModule, CommonModule, IonicModule],
   template: `
     <form [formGroup]="topicForm" (ngSubmit)="onSubmit()">
       <ion-header>
@@ -49,17 +52,46 @@ addIcons({
           formControlName="name"
           fill="solid"
           name="name"
-          label="Enter topic name"
+          label="Enter book name"
           labelPlacement="floating"
-          placeholder="Topic name"
-          [helperText]="
-            'Enter a name with at least ' + NAME_MIN_LENGTH + ' characters.'
-          "
+          placeholder="Book name"
         ></ion-input>
-        <ion-input placeholder="Add Readers" (ionInput)="searchUsers($event, 'readers')" formControlName="readerSearch"></ion-input>
+        <ion-input
+          formControlName="description"
+          fill="solid"
+          name="description"
+          label="Enter book description"
+          labelPlacement="floating"
+          placeholder="Book description"
+        ></ion-input>
+        <ion-item
+          fill="solid"
+          name="category"
+          label="Enter book category"
+          labelPlacement="floating"
+          placeholder="Book category"
+        >
+          <ion-select
+            formControlName="category"
+            label="Category"
+            placeholder="Book category"
+          >
+            <ion-select-option *ngFor="let category of categories">
+              {{ category }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-input
+          placeholder="Add Readers"
+          (ionInput)="searchUsers($event, 'readers')"
+          formControlName="readerSearch"
+        ></ion-input>
         <div *ngIf="filteredReaders$ | async as users">
           <ion-list *ngIf="users.length > 0">
-            <ion-item *ngFor="let user of users" (click)="addUser(user, 'readers')">
+            <ion-item
+              *ngFor="let user of users"
+              (click)="addUser(user, 'readers')"
+            >
               {{ user.name }} ({{ user.email }})
             </ion-item>
           </ion-list>
@@ -68,26 +100,54 @@ addIcons({
         <div>
           <ion-chip *ngFor="let reader of readers.controls; let i = index">
             <ion-label>{{ reader.value.name }}</ion-label>
-            <ion-icon name="close-circle" (click)="removeUser(i, 'readers')"></ion-icon>
+            <ion-icon
+              name="close-circle"
+              (click)="removeUser(i, 'readers')"
+            ></ion-icon>
           </ion-chip>
         </div>
 
-        <ion-input placeholder="Add Writers" (ionInput)="searchUsers($event, 'writers')" formControlName="writerSearch"></ion-input>
+        <ion-input
+          placeholder="Add Writers"
+          (ionInput)="searchUsers($event, 'writers')"
+          formControlName="writerSearch"
+        ></ion-input>
         <div *ngIf="filteredWriters$ | async as users">
           <ion-list *ngIf="users.length > 0">
-            <ion-item *ngFor="let user of users" (click)="addUser(user, 'writers')">
+            <ion-item
+              *ngFor="let user of users"
+              (click)="addUser(user, 'writers')"
+            >
               {{ user.name }} ({{ user.email }})
             </ion-item>
           </ion-list>
-        </div>  
+        </div>
 
         <div>
           <ion-chip *ngFor="let writer of writers.controls; let i = index">
             <ion-label>{{ writer.value.name }}</ion-label>
-            <ion-icon name="close-circle" (click)="removeUser(i, 'writers')"></ion-icon>
+            <ion-icon
+              name="close-circle"
+              (click)="removeUser(i, 'writers')"
+            ></ion-icon>
           </ion-chip>
         </div>
-
+        <ion-row>
+          <ion-col size="12">
+            <ion-item>
+              <ion-label position="stacked">Upload Book Cover</ion-label>
+              <input
+                type="file"
+                (change)="onFileSelected($event)"
+                accept="image/*"
+                class="custom-file-input"
+              />
+            </ion-item>
+            <div *ngIf="imagePreview" class="image-preview">
+              <img [src]="imagePreview" alt="Book Cover Preview" />
+            </div>
+          </ion-col>
+        </ion-row>
       </ion-content>
     </form>
   `,
@@ -99,20 +159,27 @@ export class CreateTopicModal implements OnInit {
   private readonly modalCtrl = inject(ModalController);
 
   readonly NAME_MIN_LENGTH = 3;
+  readonly DESCRIPTION_MIN_LENGTH = 20;
   readonly USER_SEARCH_MIN_LENGTH = 3;
+
+  selectedFile: File | null = null;
+  imagePreview: string | ArrayBuffer | null = null;
   filteredReaders$: Observable<Client[]> = of([]);
   filteredWriters$: Observable<Client[]> = of([]);
+  categories = Object.values(Category);
 
   topic: Topic | undefined;
 
   ngOnInit(): void {
     if (this.topic) {
       this.topicNameControl?.setValue(this.topic.name);
-  
+      this.topicDescriptionControl?.setValue(this.topic.description);
+      this.topicCategoryControl?.setValue(this.topic.category);
+
       if (this.topic.readers?.length) {
         this.loadUsersByIds(this.topic.readers, 'readers');
       }
-  
+
       if (this.topic.writers?.length) {
         this.loadUsersByIds(this.topic.writers, 'writers');
       }
@@ -121,9 +188,9 @@ export class CreateTopicModal implements OnInit {
 
   loadUsersByIds(userIds: string[], type: 'readers' | 'writers') {
     const userArray = type === 'readers' ? this.readers : this.writers;
-  
-    userIds.forEach(userId => {
-      this.authService.getUserById(userId).subscribe(user => {
+
+    userIds.forEach((userId) => {
+      this.authService.getUserById(userId).subscribe((user) => {
         if (user) {
           userArray.push(this.fb.control(user));
         }
@@ -136,11 +203,29 @@ export class CreateTopicModal implements OnInit {
       '',
       [Validators.required, Validators.minLength(this.NAME_MIN_LENGTH)],
     ],
+    description: [
+      '',
+      [Validators.required, Validators.minLength(this.DESCRIPTION_MIN_LENGTH)],
+    ],
+    category: ['', [Validators.required]],
     readerSearch: [''],
     writerSearch: [''],
     readers: this.fb.array([]),
-    writers: this.fb.array([])
+    writers: this.fb.array([]),
   });
+
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+
+    if (file) {
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
 
   errorText$: Observable<string> = this.topicForm.events.pipe(
     filter(
@@ -161,6 +246,24 @@ export class CreateTopicModal implements OnInit {
       ) {
         return `Name should have at least ${this.NAME_MIN_LENGTH} characters`;
       }
+      if (
+        this.topicDescriptionControl?.errors &&
+        this.topicDescriptionControl?.errors['required']
+      ) {
+        return 'This field is required';
+      }
+      if (
+        this.topicDescriptionControl?.errors &&
+        this.topicDescriptionControl?.errors['minlength']
+      ) {
+        return `Description should have at least ${this.DESCRIPTION_MIN_LENGTH} characters`;
+      }
+      if (
+        this.topicCategoryControl?.errors &&
+        this.topicCategoryControl?.errors['required']
+      ) {
+        return 'This field is required';
+      }
       return '';
     })
   );
@@ -169,6 +272,20 @@ export class CreateTopicModal implements OnInit {
 
   get topicNameControl(): AbstractControl<string | null, string | null> | null {
     return this.topicForm.get('name');
+  }
+
+  get topicDescriptionControl(): AbstractControl<
+    string | null,
+    string | null
+  > | null {
+    return this.topicForm.get('description');
+  }
+
+  get topicCategoryControl(): AbstractControl<
+    string | null,
+    string | null
+  > | null {
+    return this.topicForm.get('category');
   }
 
   get readers(): FormArray {
@@ -183,9 +300,11 @@ export class CreateTopicModal implements OnInit {
     const searchTerm = event.target.value.trim();
     if (searchTerm.length >= this.USER_SEARCH_MIN_LENGTH) {
       if (type === 'readers') {
-        this.filteredReaders$ = this.authService.getUsersByPartialNameOrEmail(searchTerm);
+        this.filteredReaders$ =
+          this.authService.getUsersByPartialNameOrEmail(searchTerm);
       } else {
-        this.filteredWriters$ = this.authService.getUsersByPartialNameOrEmail(searchTerm);
+        this.filteredWriters$ =
+          this.authService.getUsersByPartialNameOrEmail(searchTerm);
       }
     } else {
       if (type === 'readers') {
@@ -221,9 +340,7 @@ export class CreateTopicModal implements OnInit {
   }
 
   getUserId(): Observable<string | undefined> {
-    return this.authService.getConnectedUser().pipe(
-      map((user) => user?.uid)
-    );
+    return this.authService.getConnectedUser().pipe(map((user) => user?.uid));
   }
 
   async onSubmit(): Promise<void> {
@@ -233,17 +350,24 @@ export class CreateTopicModal implements OnInit {
         name: this.topicForm.value.name!,
         readers: this.readers.value.map((user: User) => user.uid),
         writers: this.writers.value.map((user: User) => user.uid),
+        description: this.topicForm.value.description!,
+        category: (this.topicForm.value.category as Category)!,
       });
     } else {
       const ownerId = await firstValueFrom(this.getUserId());
 
-      this.topicService.addTopic({
-        name: this.topicForm.value.name!,
-        readers: this.readers.value.map((user: User) => user.uid),
-        writers: this.writers.value.map((user: User) => user.uid),
-        owner: ownerId
-      });
-    } 
+      this.topicService.addTopic(
+        {
+          name: this.topicForm.value.name!,
+          readers: this.readers.value.map((user: User) => user.uid),
+          writers: this.writers.value.map((user: User) => user.uid),
+          owner: ownerId,
+          description: this.topicForm.value.description!,
+          category: (this.topicForm.value.category as Category)!,
+        },
+        this.selectedFile ?? undefined
+      );
+    }
     this.modalCtrl.dismiss();
   }
 }

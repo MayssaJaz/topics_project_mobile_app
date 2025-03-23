@@ -5,14 +5,8 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
-import {
-  ModalController,
-  IonList,
-  IonListHeader,
-  IonSkeletonText,
-  IonThumbnail,
-  PopoverController,
-} from '@ionic/angular/standalone';
+import { ToastController } from '@ionic/angular';
+import { ModalController, PopoverController } from '@ionic/angular/standalone';
 import { UserPopoverComponent } from './popover/user-management/user-management.component';
 import { CreateTopicModal } from './modals/create-topic/create-topic.component';
 import { ItemManagementPopover } from './popover/item-management/item-management.component';
@@ -32,7 +26,7 @@ addIcons({
     <ion-header [translucent]="true">
       <ion-toolbar>
         <ion-breadcrumbs>
-          <ion-breadcrumb routerLink="">Topics</ion-breadcrumb>
+          <ion-breadcrumb routerLink="">Book Discussion</ion-breadcrumb>
         </ion-breadcrumbs>
 
         <ion-buttons slot="end">
@@ -46,37 +40,62 @@ addIcons({
     <ion-content [fullscreen]="true">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Topics</ion-title>
+          <ion-title size="large">Books</ion-title>
         </ion-toolbar>
       </ion-header>
 
       <ion-list *ngIf="!loading(); else loadingTemplate">
         @for(topic of topics(); track topic.id) {
-        <ion-item>
-          <ion-button
-            slot="start"
-            fill="clear"
-            id="click-trigger"
-            (click)="presentTopicManagementPopover($event, topic)"
-            aria-label="open topic management popover"
-            data-cy="open-topic-management-popover"
-            ><ion-icon
-              slot="icon-only"
-              color="medium"
-              name="ellipsis-vertical"
-            ></ion-icon
-          ></ion-button>
+        <ion-card>
+          <ion-item id="edit-bar">
+            <ion-button
+              slot="start"
+              fill="clear"
+              id="click-trigger"
+              (click)="
+                presentTopicManagementPopover($event, topic);
+                $event.stopPropagation()
+              "
+              aria-label="open topic management popover"
+              data-cy="open-topic-management-popover"
+            >
+              <ion-icon
+                slot="icon-only"
+                color="medium"
+                name="ellipsis-vertical"
+              ></ion-icon>
+            </ion-button>
+          </ion-item>
 
-          <ion-label [routerLink]="['/topics/' + topic.id]">{{
-            topic.name
-          }}</ion-label>
-          <ion-icon
-            slot="end"
-            [routerLink]="['/topics/' + topic.id]"
-            color="medium"
-            name="chevron-forward"
-          ></ion-icon>
-        </ion-item>
+          <img alt="Book Cover" [src]="topic.cover" class="full-width-image" />
+
+          <ion-item [routerLink]="['/topics/' + topic.id]" button>
+            <ion-grid>
+              <ion-row>
+                <ion-col>
+                  <ion-card-title>{{ topic.name }}</ion-card-title>
+                </ion-col>
+              </ion-row>
+
+              <ion-row>
+                <ion-col>
+                  <ion-card-subtitle>{{ topic.category }}</ion-card-subtitle>
+                </ion-col>
+              </ion-row>
+
+              <ion-row>
+                <ion-col>
+                  <h3>Summary:</h3>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col>
+                  <ion-card-content> {{ topic.description }} </ion-card-content>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-item>
+        </ion-card>
         } @empty {
         <ion-img class="image" src="assets/img/no_data.svg" alt=""></ion-img>
         }
@@ -138,18 +157,26 @@ addIcons({
         margin: auto;
         margin-top: 50px;
       }
+      .full-width-image {
+        width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+        display: block;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+      }
+      #edit-bar{
+      padding-bottom:2%}
     `,
   ],
-  imports: [
-    IonicModule,
-    CommonModule,
-    RouterLink,
-  ],
+  imports: [IonicModule, CommonModule, RouterLink],
 })
 export class TopicsPage {
   private readonly topicService = inject(TopicService);
   private readonly modalCtrl = inject(ModalController);
   private readonly popoverCtrl = inject(PopoverController);
+  private readonly toastCtrl = inject(ToastController);
+
   loading = signal<boolean>(true);
   topics = toSignal<Topic[]>(
     this.topicService.getAll().pipe(tap(() => this.loading.set(false)))
@@ -177,6 +204,7 @@ export class TopicsPage {
   }
 
   async presentTopicManagementPopover(event: Event, topic: Topic) {
+    console.log(topic);
     const popover = await this.popoverCtrl.create({
       component: ItemManagementPopover,
       event,
