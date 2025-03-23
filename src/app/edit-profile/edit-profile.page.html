@@ -1,0 +1,41 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>My Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">My Profile</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <ion-content class="ion-padding" [fullscreen]="true">
+      <ion-input
+        formControlName="email"
+        fill="solid"
+        name="email"
+        label="Enter login email"
+        labelPlacement="floating"
+        placeholder="login email"
+        [helperText]="'Enter a login email in the format user@email.com'"
+      ></ion-input>
+      <ion-input
+        formControlName="password"
+        fill="solid"
+        name="password"
+        type="password"
+        label="Enter login password"
+        labelPlacement="floating"
+        placeholder="login password"
+        [helperText]="
+          'Enter a password with at least characters.'
+        "
+      ></ion-input>
+      <ion-button expand="full" fill="clear" >Mot de passe oublié ?</ion-button>
+      <ion-button expand="full" fill="clear">Créer un compte</ion-button>
+    </ion-content>
+  </form>
+</ion-content>
+
+

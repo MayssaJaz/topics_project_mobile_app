@@ -7,20 +7,13 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
 import { PopoverController } from '@ionic/angular/standalone';
 import { CreatePostModal } from '../modals/create-post/create-post.component';
-import { Post, Posts } from 'src/app/models/post';
+import { Post } from 'src/app/models/post';
 import { addIcons } from 'ionicons';
 import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
 import { ItemManagementPopover } from '../popover/item-management/item-management.component';
 import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  collection,
-  collectionData,
-  CollectionReference,
-  DocumentData,
-  Firestore,
-} from '@angular/fire/firestore';
+import { collection, collectionData, Firestore } from '@angular/fire/firestore';
 import { Observable, tap } from 'rxjs';
-import { generateUUID } from 'src/app/utils/generate-uuid';
 
 addIcons({ addOutline, chevronForward, ellipsisVertical });
 
@@ -73,11 +66,39 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
       </ion-list>
 
       <ng-template #loadingTemplate>
-        <ion-spinner
-          name="bubbles"
-          color="tertiary"
-          class="loading-spinner"
-        ></ion-spinner>
+        <ion-list>
+          <ion-list-header>
+            <ion-skeleton-text
+              [animated]="true"
+              style="width: 80px"
+            ></ion-skeleton-text>
+          </ion-list-header>
+          <ion-item>
+            <ion-thumbnail slot="start">
+              <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+            </ion-thumbnail>
+            <ion-label>
+              <h3>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 80%;"
+                ></ion-skeleton-text>
+              </h3>
+              <p>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 60%;"
+                ></ion-skeleton-text>
+              </p>
+              <p>
+                <ion-skeleton-text
+                  [animated]="true"
+                  style="width: 30%;"
+                ></ion-skeleton-text>
+              </p>
+            </ion-label>
+          </ion-item> </ion-list
+        >src/app/topics/popover/user-management/user-management.component.ts
       </ng-template>
 
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
@@ -121,10 +142,9 @@ export class TopicDetailsPage implements OnInit {
   loading = signal<boolean>(true);
   postsCollection = collection(this.firestore, `topics/${this.topicId}/posts`);
   posts = toSignal<Post[]>(
-    this.getAllPosts().pipe(
-      tap(() => this.loading.set(false))
-    ));
-  
+    this.getAllPosts().pipe(tap(() => this.loading.set(false)))
+  );
+
   ngOnInit(): void {}
 
   getAllPosts(): Observable<Post[]> {

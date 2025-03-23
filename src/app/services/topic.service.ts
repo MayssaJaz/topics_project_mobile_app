@@ -16,6 +16,8 @@ import {
   query,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
+import { ToastService } from './toast.service';
+import { GoogleStorageService } from './files.service';
 
 @Injectable({
   providedIn: 'root',
@@ -24,13 +26,15 @@ export class TopicService {
   private firestore = inject(Firestore);
   private _authService = inject(AuthService);
   topicsCollection = collection(this.firestore, 'topics');
+  private readonly toastService = inject(ToastService);
+  storageService = inject(GoogleStorageService);
+  downloadURL = '';
 
   getAll(): Observable<Topics> {
     const user$ = this._authService.getConnectedUser();
 
     return user$.pipe(
       switchMap((user) => {
-
         const whereUserIsownerTopics = query(
           this.topicsCollection,
           where('owner', '==', user?.uid)
@@ -39,10 +43,8 @@ export class TopicService {
         return collectionData(whereUserIsownerTopics, {
           idField: 'id',
         }) as Observable<Topic[]>;
-
       })
-    )
-
+    );
   }
 
   getById(topicId: string): Observable<Topic | undefined> {
@@ -51,27 +53,66 @@ export class TopicService {
     }) as Observable<Topic | undefined>;
   }
 
-  async addTopic(topic: Omit<Topic, 'id' | 'posts'>): Promise<void> {
-
-    addDoc(this.topicsCollection, <Topic>{
-      ...topic,
-      id: generateUUID(),
-      posts: [],
-    });
+  async uploadFile(file: File): Promise<string | Error> {
+    if (file) {
+      try {
+        const fileUrl = await this.storageService.uploadFile(file); 
+        return fileUrl;
+      } catch (error) {
+        this.toastService.presentToast('Error uploading file', 'danger');
+        return new Error('File upload failed');
+      }
+    }
+    this.toastService.presentToast('No image selected', 'danger');
+    return new Error('No file selected');
   }
   
+
+  async addTopic(
+    topic: Omit<Topic, 'id' | 'posts' | 'imageUrl'>,
+    selectedFile?: File
+  ): Promise<void> {
+    try {
+      let cover = '';
+      if (selectedFile) {
+        const fileUploadResult = await this.uploadFile(selectedFile);
+
+        if (fileUploadResult instanceof Error) {
+          throw fileUploadResult;
+        } else {
+          cover = fileUploadResult;
+        }
+      }
+
+      await addDoc(this.topicsCollection, <Topic>{
+        ...topic,
+        id: generateUUID(),
+        cover,
+        posts: [],
+      });
+
+      this.toastService.presentToast('Topic added successfully!', 'success');
+    } catch (error) {
+      console.error('Error adding topic:', error);
+      this.toastService.presentToast(
+        'Failed to add your new book',
+        'danger'
+      );
+    }
+  }
+
   getUserId(): Observable<string | undefined> {
-    return this._authService.getConnectedUser().pipe(
-      map((user) => user?.uid)
-    );
+    return this._authService.getConnectedUser().pipe(map((user) => user?.uid));
   }
 
   editTopic(topic: Topic): void {
     setDoc(doc(this.firestore, `topics/${topic.id}`), topic);
+    this.toastService.presentToast('Topic edited successfully!', 'warning');
   }
 
   removeTopic(topic: Topic): void {
     deleteDoc(doc(this.firestore, `topics/${topic.id}`));
+    this.toastService.presentToast('Topic deleted successfully!', 'danger');
   }
 
   async addPost(topicId: string, post: Omit<Post, 'id'>): Promise<void> {
