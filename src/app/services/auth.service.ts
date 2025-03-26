@@ -1,7 +1,7 @@
 import { NgZone, inject, Injectable } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, user, User, UserCredential } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { combineLatest, map, Observable } from 'rxjs';
+import { combineLatest, map, Observable, of } from 'rxjs';
 import { Client } from '../models/client';
 import { addDoc, collection, collectionData, doc, docData, endAt, Firestore, orderBy, query, setDoc, startAt, where } from '@angular/fire/firestore';
 
@@ -31,14 +31,15 @@ export class AuthService {
 
   async addUser(user: Omit<Client, 'users'| 'uid'>, uid: string): Promise<void> {
     const safeUser: Client = {
-      uid,
+      uid: uid,
       email: user.email ?? "",
       name: user.name ?? "",
       family_name: user.family_name ?? "",
       logo: user.logo ?? null, 
     };
   
-    await this.ngZone.run(() => setDoc(doc(this.usersCollection, uid), safeUser));
+    await setDoc(doc(this.firestore, `users/${uid}`), safeUser);
+
   }
   
 
@@ -77,23 +78,21 @@ export class AuthService {
   }
 
   getUsersByPartialNameOrEmail(search: string): Observable<Client[]> {
-    if (!search.trim()) return new Observable<Client[]>();
+    if (!search.trim()) return of([]);
   
-    search = search.toLowerCase();
-    const endSearch = search + '\uf8ff';
-  
-    const nameQuery = query(
-      this.usersCollection,
-      orderBy('name'),
-      startAt(search),
-      endAt(endSearch)
-    );
+    const lowerCaseSearch = search.toLowerCase();
+    const endSearch = lowerCaseSearch + '\uf8ff';
   
     const emailQuery = query(
       this.usersCollection,
-      orderBy('email'),
-      startAt(search),
-      endAt(endSearch)
+      where("email", ">=", lowerCaseSearch),
+      where("email", "<=", endSearch)
+    );
+  
+    const nameQuery = query(
+      this.usersCollection,
+      where("name", ">=", lowerCaseSearch),
+      where("name", "<=", endSearch)
     );
   
     return combineLatest([
@@ -102,13 +101,19 @@ export class AuthService {
     ]).pipe(
       map(([nameResults, emailResults]) => {
         const mergedResults = [...nameResults, ...emailResults];
+  
         return mergedResults.filter(
           (user, index, self) =>
-            index === self.findIndex((u) => u.uid === user.uid)
+            index === self.findIndex((u) => u.uid === user.uid) &&
+            (user.name.toLowerCase().includes(lowerCaseSearch) ||
+             user.email.toLowerCase().includes(lowerCaseSearch))
         );
       })
     );
   }
+  
+  
+  
   
   getUserById(userId: string): Observable<Client | null> {
     const userDocRef = doc(this.firestore, `users/${userId}`);

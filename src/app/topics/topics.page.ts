@@ -204,7 +204,6 @@ export class TopicsPage {
   }
 
   async presentTopicManagementPopover(event: Event, topic: Topic) {
-    console.log(topic);
     const popover = await this.popoverCtrl.create({
       component: ItemManagementPopover,
       event,
