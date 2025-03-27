@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Topic, Topics } from '../models/topic';
 import { Post } from '../models/post';
 import { generateUUID } from '../utils/generate-uuid';
-import { firstValueFrom, map, Observable, switchMap } from 'rxjs';
+import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
 import {
   Firestore,
   collection,
@@ -18,6 +18,7 @@ import {
 import { AuthService } from './auth.service';
 import { ToastService } from './toast.service';
 import { GoogleStorageService } from './files.service';
+import { UserRole } from '../models/client';
 
 @Injectable({
   providedIn: 'root',
@@ -30,23 +31,41 @@ export class TopicService {
   storageService = inject(GoogleStorageService);
   downloadURL = '';
 
-  getAll(): Observable<Topics> {
-    const user$ = this._authService.getConnectedUser();
-
-    return user$.pipe(
+  getAll(): Observable<Topic[]> {
+    return this._authService.getConnectedUser().pipe(
       switchMap((user) => {
-        const whereUserIsownerTopics = query(
-          this.topicsCollection,
-          where('owner', '==', user?.uid)
+        if (!user?.uid) return of([]);
+  
+        const userDocRef = doc(this.firestore, `users/${user.uid}`);
+        return docData(userDocRef).pipe(
+          switchMap((userData: any) => {
+            const isSuperAdmin = userData?.role === UserRole.SUPER_ADMIN;
+            if (isSuperAdmin) {
+              return collectionData(this.topicsCollection, { idField: 'id' }) as Observable<Topic[]>;
+            }
+  
+            const ownerQuery = query(this.topicsCollection, where('owner', '==', user.uid));
+            const writerQuery = query(this.topicsCollection, where('writers', 'array-contains', user.uid));
+            const readerQuery = query(this.topicsCollection, where('readers', 'array-contains', user.uid));
+  
+            return combineLatest([
+              collectionData(ownerQuery, { idField: 'id' }) as Observable<Topic[]>,
+              collectionData(writerQuery, { idField: 'id' }) as Observable<Topic[]>,
+              collectionData(readerQuery, { idField: 'id' }) as Observable<Topic[]>,
+            ]).pipe(
+              map(([owner, writers, readers]) => {
+                return [...owner, ...writers, ...readers].filter(
+                  (topic, index, self) => index === self.findIndex((t) => t.id === topic.id)
+                );
+              })
+            );
+          })
         );
-
-        return collectionData(whereUserIsownerTopics, {
-          idField: 'id',
-        }) as Observable<Topic[]>;
       })
     );
   }
-
+  
+  
   getById(topicId: string): Observable<Topic | undefined> {
     return docData(doc(this.firestore, `topics/${topicId}`), {
       idField: 'id',

@@ -1,9 +1,10 @@
 import { NgZone, inject, Injectable } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, user, User, UserCredential } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { combineLatest, map, Observable, of } from 'rxjs';
-import { Client } from '../models/client';
-import { addDoc, collection, collectionData, doc, docData, endAt, Firestore, orderBy, query, setDoc, startAt, where } from '@angular/fire/firestore';
+import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
+import { Client, UserRole } from '../models/client';
+import { collection, collectionData, doc, docData, endAt, Firestore, orderBy, query, setDoc, startAt, updateDoc, where } from '@angular/fire/firestore';
+import { Topic, TopicPermission } from '../models/topic';
 
 @Injectable({
   providedIn: 'root',
@@ -48,7 +49,7 @@ export class AuthService {
   }
 
   
-  async register(email: string, name: string, family_name: string, password: string): Promise<void> {
+  async register(email: string, name: string, family_name: string, password: string, isSuperAdmin = false): Promise<void> {
     const result = await createUserWithEmailAndPassword(this.auth, email, password);
     if(result?.user?.email) {
       await sendEmailVerification(result?.user);
@@ -56,7 +57,8 @@ export class AuthService {
         email,
         name,
         family_name,
-        logo: null
+        logo: null,
+        role: isSuperAdmin ? UserRole.SUPER_ADMIN : UserRole.USER,
       }
       await this.addUser(user, result.user.uid);
       return this.logout();
@@ -112,14 +114,57 @@ export class AuthService {
     );
   }
   
-  
-  
-  
   getUserById(userId: string): Observable<Client | null> {
     const userDocRef = doc(this.firestore, `users/${userId}`);
     return docData(userDocRef, { idField: 'uid' }) as Observable<Client | null>;
   }
+  canPerformAction(topic: Topic | null | undefined, permission: TopicPermission): Observable<boolean | undefined> {
+    return this.getConnectedUser().pipe(
+      switchMap((user) => {
+        if (!user?.uid) return of(false); 
 
+        const userDocRef = doc(this.firestore, `users/${user.uid}`);
+
+        return docData(userDocRef).pipe(
+          map((userData: any) => {
+            const isSuperAdmin = userData?.role === UserRole.SUPER_ADMIN;
+            if (isSuperAdmin) return true; 
+  
+            switch (permission) {
+              case TopicPermission.READ:
+                return (
+                  topic?.owner === user.uid ||
+                  topic?.readers?.includes(user.uid) ||
+                  topic?.writers?.includes(user.uid) ||
+                  topic?.master?.includes(user.uid)
+                );
+  
+              case TopicPermission.WRITE:
+                return (
+                  topic?.owner === user.uid ||
+                  topic?.writers?.includes(user.uid) ||
+                  topic?.master?.includes(user.uid)
+                );
+  
+              case TopicPermission.FULL:
+                return topic?.owner === user.uid || topic?.master?.includes(user.uid);
+  
+              default:
+                return false;
+            }
+          })
+        );
+      })
+    );
+  }
+  
+  
+
+  async setUserRole(uid: string, role: UserRole): Promise<void> {
+    const userRef = doc(this.firestore, `users/${uid}`);
+    await updateDoc(userRef, { role });
+  }
+  
   constructor() {}
 }
 

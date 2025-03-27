@@ -25,8 +25,15 @@ export interface Topic {
   writers?: string[];
   owner?:string;
   cover?: string;
+  master?: string;
   description: string;
   category: Category;
 }
 
 export type Topics = Topic[];
+
+export enum TopicPermission {
+  READ = 'read',
+  WRITE = 'write',
+  FULL = 'full',
+}

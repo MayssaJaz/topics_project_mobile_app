@@ -13,7 +13,9 @@ import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
 import { ItemManagementPopover } from '../popover/item-management/item-management.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { collection, collectionData, Firestore } from '@angular/fire/firestore';
-import { Observable, tap } from 'rxjs';
+import { Observable, of, switchMap, tap } from 'rxjs';
+import { Topic, TopicPermission } from 'src/app/models/topic';
+import { AuthService } from 'src/app/services/auth.service';
 
 addIcons({ addOutline, chevronForward, ellipsisVertical });
 
@@ -42,10 +44,11 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
         @for(post of posts(); track post.id) {
         <ion-item>
           <ion-button
+            *ngIf="canEdit$ | async" 
             slot="start"
             fill="clear"
             id="click-trigger"
-            (click)="presentPostManagementPopover($event, post)"
+            (click)="presentPostManagementPopover($event, post, topic())"
             aria-label="open post management popover"
             data-cy="open-post-management-popover"
             ><ion-icon
@@ -101,7 +104,7 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
         >src/app/topics/popover/user-management/user-management.component.ts
       </ng-template>
 
-      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab *ngIf="canEdit$ | async"  slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button
           data-cy="open-create-post-modal-button"
           aria-label="open add post modal"
@@ -134,6 +137,8 @@ export class TopicDetailsPage implements OnInit {
   private readonly modalCtrl = inject(ModalController);
   private readonly popoverCtrl = inject(PopoverController);
   private readonly firestore = inject(Firestore);
+  private readonly authService = inject(AuthService);
+  canEdit$: Observable<boolean | undefined> | undefined ;
 
   topicId = this.route.snapshot.params['id'];
   topic = toSignal(this.topicService.getById(this.topicId), {
@@ -145,7 +150,13 @@ export class TopicDetailsPage implements OnInit {
     this.getAllPosts().pipe(tap(() => this.loading.set(false)))
   );
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.canEdit$ = this.topicService.getById(this.topicId).pipe(
+      switchMap((topic) => 
+        topic ? this.authService.canPerformAction(topic, TopicPermission.WRITE) : of(false)
+      )
+    );
+  }
 
   getAllPosts(): Observable<Post[]> {
     this.loading.set(true);
@@ -164,10 +175,11 @@ export class TopicDetailsPage implements OnInit {
     await modal.onDidDismiss();
   }
 
-  async presentPostManagementPopover(event: Event, post: Post): Promise<void> {
+  async presentPostManagementPopover(event: Event, post: Post, topic: Topic | undefined | null): Promise<void> {
     const popover = await this.popoverCtrl.create({
       component: ItemManagementPopover,
       event,
+      componentProps: { topic }
     });
     await popover.present();
 

@@ -13,6 +13,7 @@ import { ItemManagementPopover } from './popover/item-management/item-management
 import { Topic } from '../models/topic';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { tap } from 'rxjs';
+import { AuthService } from '../services/auth.service';
 
 addIcons({
   addOutline,
@@ -176,7 +177,7 @@ export class TopicsPage {
   private readonly modalCtrl = inject(ModalController);
   private readonly popoverCtrl = inject(PopoverController);
   private readonly toastCtrl = inject(ToastController);
-
+  private readonly authService = inject(AuthService);
   loading = signal<boolean>(true);
   topics = toSignal<Topic[]>(
     this.topicService.getAll().pipe(tap(() => this.loading.set(false)))
@@ -207,6 +208,7 @@ export class TopicsPage {
     const popover = await this.popoverCtrl.create({
       component: ItemManagementPopover,
       event,
+      componentProps: { topic }
     });
 
     await popover.present();
