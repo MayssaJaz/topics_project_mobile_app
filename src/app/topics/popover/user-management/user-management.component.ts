@@ -5,10 +5,12 @@ import { addIcons } from 'ionicons';
 import {
   personCircleOutline,
   createOutline,
-  logOutOutline
+  logOutOutline,
 } from 'ionicons/icons';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
+import { AlertComponent } from '../../alert/alert.component';
+import { ToastService } from 'src/app/services/toast.service';
 addIcons({
   personCircleOutline,
   createOutline,
@@ -37,14 +39,24 @@ export class UserPopoverComponent {
   constructor(private popoverCtrl: PopoverController) {}
   private readonly authService = inject(AuthService);
   private router = inject(Router);
+  private alertService = inject(AlertComponent);
+  private toastService = inject(ToastService);
 
   editProfile() {
-    this.router.navigate(['/edit-profile'])
+    this.router.navigate(['/edit-profile']);
     this.popoverCtrl.dismiss();
   }
 
   async logout() {
-    await this.authService.logout();
+    await this.alertService.presentAlert('Are you sure you want to logout?', () => {
+      this.authService.logout().then(() => {
+        this.toastService.presentToast('You have successfully logged out', 'success');
+        this.router.navigate(['/login']);
+      }).catch((error) => {
+        this.toastService.presentToast('Logout failed: ' + error.message, 'danger');
+      });
+    });
+
     this.popoverCtrl.dismiss();
   }
 }

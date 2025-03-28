@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { TopicService } from '../services/topic.service';
 import { CommonModule } from '@angular/common';
@@ -166,8 +166,9 @@ addIcons({
         border-top-left-radius: 8px;
         border-top-right-radius: 8px;
       }
-      #edit-bar{
-      padding-bottom:2%}
+      #edit-bar {
+        padding-bottom: 2%;
+      }
     `,
   ],
   imports: [IonicModule, CommonModule, RouterLink],
@@ -178,6 +179,7 @@ export class TopicsPage {
   private readonly popoverCtrl = inject(PopoverController);
   private readonly toastCtrl = inject(ToastController);
   private readonly authService = inject(AuthService);
+
   loading = signal<boolean>(true);
   topics = toSignal<Topic[]>(
     this.topicService.getAll().pipe(tap(() => this.loading.set(false)))
@@ -208,7 +210,7 @@ export class TopicsPage {
     const popover = await this.popoverCtrl.create({
       component: ItemManagementPopover,
       event,
-      componentProps: { topic }
+      componentProps: { topic },
     });
 
     await popover.present();
