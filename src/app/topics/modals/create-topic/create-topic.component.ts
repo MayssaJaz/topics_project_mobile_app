@@ -21,6 +21,8 @@ import { User } from '@angular/fire/auth';
 import { Client } from 'src/app/models/client';
 import { addIcons } from 'ionicons';
 import { closeCircle } from 'ionicons/icons';
+import { AlertComponent } from '../../alert/alert.component';
+import { ToastService } from 'src/app/services/toast.service';
 
 addIcons({
   closeCircle,
@@ -90,7 +92,7 @@ addIcons({
           <ion-list *ngIf="users.length > 0">
             <ion-item
               *ngFor="let user of users"
-              (click)="addUser(user, 'readers')"
+              (click)="addUserHandler(user, 'readers')"
             >
               {{ user.name }} ({{ user.email }})
             </ion-item>
@@ -102,7 +104,7 @@ addIcons({
             <ion-label>{{ reader.value.name }}</ion-label>
             <ion-icon
               name="close-circle"
-              (click)="removeUser(i, 'readers')"
+              (click)="removeUser(reader.value.uid, 'readers')"
             ></ion-icon>
           </ion-chip>
         </div>
@@ -116,7 +118,7 @@ addIcons({
           <ion-list *ngIf="users.length > 0">
             <ion-item
               *ngFor="let user of users"
-              (click)="addUser(user, 'writers')"
+              (click)="addUserHandler(user, 'writers')"
             >
               {{ user.name }} ({{ user.email }})
             </ion-item>
@@ -128,7 +130,7 @@ addIcons({
             <ion-label>{{ writer.value.name }}</ion-label>
             <ion-icon
               name="close-circle"
-              (click)="removeUser(i, 'writers')"
+              (click)="removeUser(writer.value.uid, 'writers')"
             ></ion-icon>
           </ion-chip>
         </div>
@@ -157,6 +159,7 @@ export class CreateTopicModal implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly modalCtrl = inject(ModalController);
+  private alertService = inject(AlertComponent);
 
   readonly NAME_MIN_LENGTH = 3;
   readonly DESCRIPTION_MIN_LENGTH = 20;
@@ -167,6 +170,7 @@ export class CreateTopicModal implements OnInit {
   filteredReaders$: Observable<Client[]> = of([]);
   filteredWriters$: Observable<Client[]> = of([]);
   categories = Object.values(Category);
+  private toastService = inject(ToastService);
 
   topic: Topic | undefined;
 
@@ -301,10 +305,10 @@ export class CreateTopicModal implements OnInit {
     if (searchTerm.length >= this.USER_SEARCH_MIN_LENGTH) {
       if (type === 'readers') {
         this.filteredReaders$ =
-          this.authService.getUsersByPartialNameOrEmail(searchTerm);
+          this.authService.getUsersByPartialNameOrEmail(searchTerm, this.topic);
       } else {
         this.filteredWriters$ =
-          this.authService.getUsersByPartialNameOrEmail(searchTerm);
+          this.authService.getUsersByPartialNameOrEmail(searchTerm, this.topic);
       }
     } else {
       if (type === 'readers') {
@@ -315,8 +319,23 @@ export class CreateTopicModal implements OnInit {
     }
   }
 
+  async addUserHandler(user: Client, type: 'readers' | 'writers') {
+
+    const isInOppositeList =
+    type === 'readers'
+      ? this.writers.controls.some(ctrl => ctrl.value.uid === user.uid)
+      : this.readers.controls.some(ctrl => ctrl.value.uid === user.uid);
+
+    if (isInOppositeList) {
+       await this.showConfirmationPopup(user, type);
+    } else {
+      this.addUser(user, type);
+    }
+  }
+
   addUser(user: Client, type: 'readers' | 'writers') {
     const userArray = type === 'readers' ? this.readers : this.writers;
+
     if (!userArray.controls.some((ctrl) => ctrl.value.uid === user.uid)) {
       userArray.push(this.fb.control(user));
     }
@@ -330,9 +349,14 @@ export class CreateTopicModal implements OnInit {
     }
   }
 
-  removeUser(index: number, type: 'readers' | 'writers') {
+  removeUser(userId: string | undefined, type: 'readers' | 'writers') {
     const userArray = type === 'readers' ? this.readers : this.writers;
-    userArray.removeAt(index);
+
+    const index = userArray.controls.findIndex(ctrl => ctrl.value.uid === userId);
+  
+    if (index !== -1) {
+      userArray.removeAt(index);
+    }
   }
 
   cancel(): void {
@@ -369,5 +393,16 @@ export class CreateTopicModal implements OnInit {
       );
     }
     this.modalCtrl.dismiss();
+  }
+
+  async showConfirmationPopup(user: Client,  type: 'readers' | 'writers') {
+    await this.alertService.presentAlert(`This user is listed as a ${type.slice(0,type.length -1)} on this book. Are you sure you want to change him for a writer?`, () => {
+      if (type === 'readers') {
+        this.removeUser(user?.uid, 'writers');
+      } else {
+        this.removeUser(user?.uid, 'readers');
+      }
+      this.addUser(user, type);
+    });
   }
 }
