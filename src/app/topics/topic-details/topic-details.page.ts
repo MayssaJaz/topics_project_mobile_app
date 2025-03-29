@@ -16,6 +16,7 @@ import { collection, collectionData, Firestore } from '@angular/fire/firestore';
 import { Observable, of, switchMap, tap } from 'rxjs';
 import { Topic, TopicPermission } from 'src/app/models/topic';
 import { AuthService } from 'src/app/services/auth.service';
+import { UserPopoverComponent } from '../popover/user-management/user-management.component';
 
 addIcons({ addOutline, chevronForward, ellipsisVertical });
 
@@ -30,6 +31,11 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
             topic()?.name
           }}</ion-breadcrumb>
         </ion-breadcrumbs>
+        <ion-buttons slot="end">
+          <ion-button (click)="presentUserPopover($event)">
+            <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
@@ -44,7 +50,7 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
         @for(post of posts(); track post.id) {
         <ion-item>
           <ion-button
-            *ngIf="canEdit$ | async" 
+            *ngIf="canEdit$ | async"
             slot="start"
             fill="clear"
             id="click-trigger"
@@ -100,11 +106,16 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
                 ></ion-skeleton-text>
               </p>
             </ion-label>
-          </ion-item> </ion-list
-        >src/app/topics/popover/user-management/user-management.component.ts
+          </ion-item>
+        </ion-list>
       </ng-template>
 
-      <ion-fab *ngIf="canEdit$ | async"  slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab
+        *ngIf="canEdit$ | async"
+        slot="fixed"
+        vertical="bottom"
+        horizontal="end"
+      >
         <ion-fab-button
           data-cy="open-create-post-modal-button"
           aria-label="open add post modal"
@@ -138,7 +149,7 @@ export class TopicDetailsPage implements OnInit {
   private readonly popoverCtrl = inject(PopoverController);
   private readonly firestore = inject(Firestore);
   private readonly authService = inject(AuthService);
-  canEdit$: Observable<boolean | undefined> | undefined ;
+  canEdit$: Observable<boolean | undefined> | undefined;
 
   topicId = this.route.snapshot.params['id'];
   topic = toSignal(this.topicService.getById(this.topicId), {
@@ -151,11 +162,26 @@ export class TopicDetailsPage implements OnInit {
   );
 
   ngOnInit(): void {
-    this.canEdit$ = this.topicService.getById(this.topicId).pipe(
-      switchMap((topic) => 
-        topic ? this.authService.canPerformAction(topic, TopicPermission.WRITE) : of(false)
-      )
-    );
+    this.canEdit$ = this.topicService
+      .getById(this.topicId)
+      .pipe(
+        switchMap((topic) =>
+          topic
+            ? this.authService.canPerformAction(topic, TopicPermission.WRITE)
+            : of(false)
+        )
+      );
+  }
+
+  async presentUserPopover(event: Event) {
+    const popover = await this.popoverCtrl.create({
+      component: UserPopoverComponent,
+      event,
+      showBackdrop: true,
+      translucent: true,
+    });
+
+    await popover.present();
   }
 
   getAllPosts(): Observable<Post[]> {
@@ -175,11 +201,15 @@ export class TopicDetailsPage implements OnInit {
     await modal.onDidDismiss();
   }
 
-  async presentPostManagementPopover(event: Event, post: Post, topic: Topic | undefined | null): Promise<void> {
+  async presentPostManagementPopover(
+    event: Event,
+    post: Post,
+    topic: Topic | undefined | null
+  ): Promise<void> {
     const popover = await this.popoverCtrl.create({
       component: ItemManagementPopover,
       event,
-      componentProps: { topic }
+      componentProps: { topic },
     });
     await popover.present();
 

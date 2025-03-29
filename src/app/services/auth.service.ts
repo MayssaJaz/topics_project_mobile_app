@@ -21,10 +21,6 @@ export class AuthService {
       idField: 'id',
     }) as Observable<User[]>;
   }
-  
-  getAuth(): Observable<User | null> {
-    return user(this.auth);
-  }  
 
   getConnectedUser(): Observable<User | null>{
     return user(this.auth);

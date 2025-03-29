@@ -1,41 +1,38 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>My Profile</ion-title>
+    <ion-back-button slot="start" defaultHref="/topics"></ion-back-button>
   </ion-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">My Profile</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <ion-content class="ion-padding" [fullscreen]="true">
+<ion-content class="ion-padding">
+  <div class="profile-image-container" (click)="editProfilePicture()">
+    <img
+      src="assets/img/no_logo.jpg"
+      alt="Profile Image"
+      class="profile-image"
+    />
+    <div class="edit-badge">
+      <ion-icon name="create-outline"></ion-icon>
+    </div>
+  </div>
+
+  <ion-content class="ion-padding">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
       <ion-input
-        formControlName="email"
+        formControlName="name"
         fill="solid"
-        name="email"
-        label="Enter login email"
+        label="Edit your name"
         labelPlacement="floating"
-        placeholder="login email"
-        [helperText]="'Enter a login email in the format user@email.com'"
+        placeholder="Your name"
+        [errorText]="nameErrorText()"
       ></ion-input>
       <ion-input
-        formControlName="password"
+        formControlName="familyName"
         fill="solid"
-        name="password"
-        type="password"
-        label="Enter login password"
+        label="Edit your family name"
         labelPlacement="floating"
-        placeholder="login password"
-        [helperText]="
-          'Enter a password with at least characters.'
-        "
+        placeholder="Your family name"
+        [errorText]="familyNameErrorText()"
       ></ion-input>
-      <ion-button expand="full" fill="clear" >Mot de passe oublié ?</ion-button>
-      <ion-button expand="full" fill="clear">Créer un compte</ion-button>
-    </ion-content>
-  </form>
+    </form>
+  </ion-content>
 </ion-content>
-
-

@@ -1,0 +1,36 @@
+
+  
+  .profile-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    flex-direction: column;  
+  }
+  
+  .profile-image {
+    width: 100px; 
+    height: 100px; 
+    border-radius: 50%;
+    object-fit: cover;  
+    border: 2px solid #ffff
+  }
+  
+  .edit-badge {
+    margin-top: -15px; 
+    background-color: #4CAF50; 
+    color: white;
+    width: 30px; 
+    height: 30px;  
+    border-radius: 50%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
+    margin-left: 5%;
+  }
+  
+  .edit-badge ion-icon {
+    font-size: 18px; 
+  }
+  
