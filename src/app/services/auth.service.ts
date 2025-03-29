@@ -3,7 +3,7 @@ import { Auth, createUserWithEmailAndPassword, sendEmailVerification, sendPasswo
 import { Router } from '@angular/router';
 import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
 import { Client, UserRole } from '../models/client';
-import { collection, collectionData, doc, docData, endAt, Firestore, orderBy, query, setDoc, startAt, updateDoc, where } from '@angular/fire/firestore';
+import { collection, collectionData, doc, docData, Firestore, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
 import { Topic, TopicPermission } from '../models/topic';
 
 @Injectable({
@@ -79,7 +79,7 @@ export class AuthService {
     return sendPasswordResetEmail(this.auth, email)
   }
 
-  getUsersByPartialNameOrEmail(search: string): Observable<Client[]> {
+  getUsersByPartialNameOrEmail(search: string, topic: Topic | undefined): Observable<Client[]> {
     if (!search.trim()) return of([]);
   
     const lowerCaseSearch = search.toLowerCase();
@@ -100,15 +100,22 @@ export class AuthService {
     return combineLatest([
       collectionData(nameQuery, { idField: 'uid' }) as Observable<Client[]>,
       collectionData(emailQuery, { idField: 'uid' }) as Observable<Client[]>,
+      this.getConnectedUser()
     ]).pipe(
-      map(([nameResults, emailResults]) => {
+      map(([nameResults, emailResults, currentUser]) => {
         const mergedResults = [...nameResults, ...emailResults];
+
+        //remove user from search and owner
+        const currentUserId = currentUser?.uid;
+        const ownerId = topic?.owner;
   
         return mergedResults.filter(
           (user, index, self) =>
             index === self.findIndex((u) => u.uid === user.uid) &&
             (user.name.toLowerCase().includes(lowerCaseSearch) ||
-             user.email.toLowerCase().includes(lowerCaseSearch))
+             user.email.toLowerCase().includes(lowerCaseSearch)) &&
+             user.uid !== currentUserId &&
+             user.uid !== ownerId
         );
       })
     );
