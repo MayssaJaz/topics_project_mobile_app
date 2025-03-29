@@ -1,21 +1,22 @@
 <ion-header>
   <ion-toolbar>
-    <ion-back-button slot="start" defaultHref="/topics"></ion-back-button>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding">
-  <div class="profile-image-container" (click)="editProfilePicture()">
-    <img
-      src="assets/img/no_logo.jpg"
-      alt="Profile Image"
-      class="profile-image"
-    />
-    <div class="edit-badge">
-      <ion-icon name="create-outline"></ion-icon>
-    </div>
-  </div>
 
-  <ion-content class="ion-padding">
+<ion-content class="ion-padding">
+  <ng-container *ngIf="!loading(); else loadingTemplate">
+    <div class="profile-image-container" (click)="editProfilePicture()">
+      <img [src]="logoSrc" alt="Profile Image" class="profile-image" />
+      <div class="edit-badge">
+        <ion-icon name="create-outline"></ion-icon>
+      </div>
+    </div>
+
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
       <ion-input
         formControlName="name"
@@ -25,6 +26,7 @@
         placeholder="Your name"
         [errorText]="nameErrorText()"
       ></ion-input>
+
       <ion-input
         formControlName="familyName"
         fill="solid"
@@ -33,6 +35,23 @@
         placeholder="Your family name"
         [errorText]="familyNameErrorText()"
       ></ion-input>
+
+      <ion-row class="ion-justify-content-end">
+        <ion-col size="auto">
+          <ion-button (click)="cancel()" color="medium">Cancel</ion-button>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-button type="submit" [disabled]="userForm.invalid" strong="true">
+            Confirm
+          </ion-button>
+        </ion-col>
+      </ion-row>
     </form>
-  </ion-content>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+    </div>
+  </ng-template>
 </ion-content>

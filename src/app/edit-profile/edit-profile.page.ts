@@ -1,25 +1,23 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
-  FormsModule,
   ReactiveFormsModule,
   StatusChangeEvent,
   TouchedChangeEvent,
   Validators,
 } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, Observable } from 'rxjs';
-import { Post } from '../models/post';
-import { TopicService } from '../services/topic.service';
-import { ModalController } from '@ionic/angular/standalone';
 import { AuthService } from '../services/auth.service';
-import { createOutline } from 'ionicons/icons';
+import { arrowBack, createOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
+import { ModalController } from '@ionic/angular/standalone';
+import { AddPictureComponent } from '../topics/modals/add-picture/add-picture.component';
 
-addIcons({ createOutline });
+addIcons({ createOutline, arrowBack });
 
 @Component({
   selector: 'app-edit-profile',
@@ -29,21 +27,26 @@ addIcons({ createOutline });
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class EditProfilePage {
-  private readonly topicService = inject(TopicService);
   private readonly fb = inject(FormBuilder);
-  private readonly modalCtrl = inject(ModalController);
-
+  location = inject(Location);
   topicId!: string;
-  post: Post | undefined;
   private _authService = inject(AuthService);
   private name: string = '';
   private familyName: string = '';
+  private uid: string = '';
   private logo: string = '';
+  private readonly modalCtrl = inject(ModalController);
+  loading = signal<boolean>(true);
+
+  get logoSrc(): string {
+    return this.logo !== '' ? this.logo : 'assets/img/no_logo.jpg';
+  }
   ngOnInit(): void {
     this._authService.getConnectedUser().subscribe((user) => {
       if (user)
         this._authService.getUserById(user.uid).subscribe((userDetails) => {
           if (userDetails) {
+            this.uid = user.uid;
             this.name = userDetails.name;
             this.familyName = userDetails.family_name;
             this.logo = userDetails.logo || '';
@@ -53,6 +56,7 @@ export class EditProfilePage {
             });
           }
         });
+      this.loading.set(false);
     });
   }
 
@@ -110,27 +114,33 @@ export class EditProfilePage {
   }
 
   cancel(): void {
-    this.modalCtrl.dismiss();
+    this.location.back();
+  }
+  onSubmit(): void {
+    this._authService.editUser(
+      this.uid,
+      this.userNameControl?.value ?? '',
+      this.userFamilyNameControl?.value ?? ''
+    );
   }
 
-  onSubmit(): void {
-    if (this.post?.id) {
-      this.topicService.editPost(this.topicId, {
-        ...this.post,
-        name: this.userForm.value.name!,
-        description: this.userForm.value.familyName!,
-      });
-    } else {
-      this.topicService.addPost(this.topicId, {
-        name: this.userForm.value.name!,
-        description: this.userForm.value.familyName!,
-      });
-    }
+  goBack(): void {
+    this.location.back();
+  }
 
-    this.modalCtrl.dismiss();
+  async openModal(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: AddPictureComponent,
+    });
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+    if (data) {
+      this.logo = data;
+      this._authService.editProfilePicture(this.uid, data);
+    }
   }
 
   editProfilePicture(): void {
-    console.log('Edit profile picture');
+    this.openModal();
   }
 }
