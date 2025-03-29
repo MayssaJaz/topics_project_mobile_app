@@ -177,8 +177,6 @@ export class TopicsPage {
   private readonly topicService = inject(TopicService);
   private readonly modalCtrl = inject(ModalController);
   private readonly popoverCtrl = inject(PopoverController);
-  private readonly toastCtrl = inject(ToastController);
-  private readonly authService = inject(AuthService);
 
   loading = signal<boolean>(true);
   topics = toSignal<Topic[]>(
