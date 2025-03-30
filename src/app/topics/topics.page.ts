@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { TopicService } from '../services/topic.service';
 import { CommonModule } from '@angular/common';
@@ -7,13 +7,14 @@ import { addIcons } from 'ionicons';
 import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
 import { ToastController } from '@ionic/angular';
 import { ModalController, PopoverController } from '@ionic/angular/standalone';
-import { UserPopoverComponent } from './popover/user-management/user-management.component';
+import { UserPopoverComponent } from './components/popover/user-management/user-management.component';
 import { CreateTopicModal } from './modals/create-topic/create-topic.component';
-import { ItemManagementPopover } from './popover/item-management/item-management.component';
+import { ItemManagementPopover } from './components/popover/item-management/item-management.component';
 import { Topic } from '../models/topic';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { tap } from 'rxjs';
+import { firstValueFrom, tap } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { ReactionsComponent } from "./components/reactions/reactions.component";
 
 addIcons({
   addOutline,
@@ -96,6 +97,13 @@ addIcons({
               </ion-row>
             </ion-grid>
           </ion-item>
+          <ion-item>
+          <ion-row>
+            <ion-col>
+              <app-reactions [topic]="topic" [userId]="userId"></app-reactions>
+            </ion-col>
+          </ion-row>
+          </ion-item>
         </ion-card>
         } @empty {
         <ion-img class="image" src="assets/img/no_data.svg" alt=""></ion-img>
@@ -171,17 +179,25 @@ addIcons({
       }
     `,
   ],
-  imports: [IonicModule, CommonModule, RouterLink],
+  imports: [IonicModule, CommonModule, RouterLink, ReactionsComponent],
 })
-export class TopicsPage {
+export class TopicsPage implements OnInit {
+
   private readonly topicService = inject(TopicService);
   private readonly modalCtrl = inject(ModalController);
   private readonly popoverCtrl = inject(PopoverController);
-
+  private readonly toastCtrl = inject(ToastController);
+  private readonly authService = inject(AuthService);
+  userId: string | undefined;
   loading = signal<boolean>(true);
   topics = toSignal<Topic[]>(
     this.topicService.getAll().pipe(tap(() => this.loading.set(false)))
   );
+
+  async ngOnInit() {
+    this.userId = await firstValueFrom(this.authService.getUserId());
+
+  }
 
   async openModal(topic?: Topic): Promise<void> {
     const modal = await this.modalCtrl.create({

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Topic, Topics } from '../models/topic';
+import { ReactionsType, Topic, Topics } from '../models/topic';
 import { Post } from '../models/post';
 import { generateUUID } from '../utils/generate-uuid';
 import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
@@ -14,6 +14,7 @@ import {
   deleteDoc,
   where,
   query,
+  updateDoc,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { ToastService } from './toast.service';
@@ -125,13 +126,36 @@ export class TopicService {
   }
 
   editTopic(topic: Topic): void {
-    setDoc(doc(this.firestore, `topics/${topic.id}`), topic);
-    this.toastService.presentToast('Topic edited successfully!', 'warning');
+    setDoc(doc(this.firestore, `topics/${topic.id}`), topic)
+    .then(() => {
+      this.toastService.presentToast('Topic edited successfully!', 'warning');
+    })
+    .catch((error) => {
+      this.toastService.presentToast('Error updating topic: ' + error.message, 'danger');
+    });
+  }
+
+  editTopicReactions(topicId: string, reactions: Record<ReactionsType, string[]>): void {
+    const topicRef = doc(this.firestore, `topics/${topicId}`);
+    updateDoc(topicRef, {
+      reactions: reactions
+    })
+      .then(() => {
+        this.toastService.presentToast('Reactions updated successfully!', 'success');
+      })
+      .catch((error) => {
+        this.toastService.presentToast('Error updating reactions: ' + error.message, 'danger');
+      });
   }
 
   removeTopic(topic: Topic): void {
     deleteDoc(doc(this.firestore, `topics/${topic.id}`));
-    this.toastService.presentToast('Topic deleted successfully!', 'danger');
+    this.toastService.presentToast('Topic deleted successfully!', 'danger').then(() => {
+      this.toastService.presentToast('Topic removed successfully!', 'warning');
+    })
+    .catch((error) => {
+      this.toastService.presentToast('Error removing topic: ' + error.message, 'danger');
+    });
   }
 
   async addPost(topicId: string, post: Omit<Post, 'id'>): Promise<void> {
@@ -152,4 +176,5 @@ export class TopicService {
   removePost(topicId: string, post: Post): void {
     deleteDoc(doc(this.firestore, `topics/${topicId}/posts/${post.id}`));
   }
+  
 }

@@ -28,6 +28,7 @@ export interface Topic {
   master?: string;
   description: string;
   category: Category;
+  reactions: Record<ReactionsType, string[]>; // Example: { '👍': ['user1', 'user2'], '❤️': ['user3'] }
 }
 
 export type Topics = Topic[];
@@ -36,4 +37,10 @@ export enum TopicPermission {
   READ = 'read',
   WRITE = 'write',
   FULL = 'full',
+}
+export enum ReactionsType {
+  LOVE = '❤️',
+  THUMBS_UP = '👍',
+  THUMBS_DOWN = '👎', 
+  SAD = '😢',
 }
