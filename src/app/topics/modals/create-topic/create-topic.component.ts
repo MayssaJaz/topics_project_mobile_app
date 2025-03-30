@@ -375,7 +375,8 @@ export class CreateTopicModal implements OnInit {
         writers: this.writers.value.map((user: User) => user.uid),
         description: this.topicForm.value.description!,
         category: (this.topicForm.value.category as Category)!,
-      });
+      },
+      this.selectedFile ?? undefined);
     } else {
       const ownerId = await firstValueFrom(this.getUserId());
 

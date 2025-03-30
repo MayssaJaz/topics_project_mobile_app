@@ -15,17 +15,18 @@ import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { AlertComponent } from '../../alert/alert.component';
 import { ToastService } from 'src/app/services/toast.service';
+import { HasTopicPermissionPipe } from "../../../topic-permission.pipe";
 
 addIcons({ trash, pencil });
 
 @Component({
   selector: 'app-manage-item',
-  imports: [IonContent, IonIcon, IonList, IonItem, IonLabel, CommonModule],
+  imports: [IonContent, IonIcon, IonList, IonItem, IonLabel, CommonModule, HasTopicPermissionPipe],
   template: `
     <ion-content>
       <ion-list>
         <ion-item
-          *ngIf="canEdit$ | async"
+           *ngIf="topic | hasTopicPermission:'edit' | async"
           [button]="true"
           [detail]="false"
           (click)="edit()"
@@ -34,7 +35,7 @@ addIcons({ trash, pencil });
           <ion-icon slot="end" name="pencil"></ion-icon>
         </ion-item>
         <ion-item
-          *ngIf="canDelete$ | async"
+          *ngIf=" topic | hasTopicPermission:'delete' | async"
           [button]="true"
           [detail]="false"
           (click)="remove()"
@@ -48,24 +49,10 @@ addIcons({ trash, pencil });
 })
 export class ItemManagementPopover {
   private readonly popoverCtrl = inject(PopoverController);
-  private readonly authService = inject(AuthService);
-  canEdit$: Observable<boolean | undefined> | undefined;
-  canDelete$: Observable<boolean | undefined> | undefined;
   private alertService = inject(AlertComponent);
   private toastService = inject(ToastService);
 
   @Input() topic!: Topic;
-
-  ngOnInit() {
-    this.canEdit$ = this.authService.canPerformAction(
-      this.topic,
-      TopicPermission.WRITE
-    );
-    this.canDelete$ = this.authService.canPerformAction(
-      this.topic,
-      TopicPermission.FULL
-    );
-  }
 
   edit() {
     this.popoverCtrl.dismiss({ action: 'edit' });

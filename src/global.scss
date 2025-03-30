@@ -1,37 +1,124 @@
-/*
- * App Global CSS
+/* 
+ * Global App CSS
  * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
+ * Place global style rules here that apply to your entire app.
+ * This file can also be used to import other CSS/Sass files.
+ * More info: https://ionicframework.com/docs/layout/global-stylesheets
  */
 
-/* Core CSS required for Ionic components to work properly */
-@import "@ionic/angular/css/core.css";
+/* Custom color palette based on the logo */
+:root {
+  /* Primary color (blue for toolbar) */
+  --ion-color-primary: #b3dbff; /* Light blue */
+  --ion-color-primary-rgb: 179, 219, 255;
+  --ion-color-primary-contrast: #2d3748; /* Dark text for contrast */
+  --ion-color-primary-contrast-rgb: 45, 55, 72;
+  --ion-color-primary-shade: #9ec1e6;
+  --ion-color-primary-tint: #bbdfff;
 
-/* Basic CSS for apps built with Ionic */
+  /* Secondary color (purple for buttons/icons) */
+  --ion-color-secondary: #9f7aea; /* Purple */
+  --ion-color-secondary-rgb: 159, 122, 234;
+  --ion-color-secondary-contrast: #ffffff; /* White text */
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #8c6bce;
+  --ion-color-secondary-tint: #a987ec;
+
+  /* Keep other colors */
+  --ion-color-tertiary: #7f9cf5;
+  --ion-color-success: #48bb78;
+  --ion-color-warning: #ed8936;
+  --ion-color-danger: #f56565;
+
+  /* Background colors */
+  --ion-background-color: #f8fbff; /* Very light blue */
+  --ion-item-background: #ffffff;
+
+  /* Text colors */
+  --ion-text-color: #2d3748;
+  --ion-text-color-rgb: 45, 55, 72;
+  --ion-text-color-secondary: #4a5568;
+
+  /* Borders */
+  --ion-border-color: #e2efff; /* Light blue border */
+}
+
+/* Toolbar - uses primary color (blue) */
+ion-toolbar {
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast); /* Dark text */
+}
+
+ion-button {
+  --color: var(--ion-color-primary-contrast);
+}
+
+/* Icons - purple by default */
+ion-icon {
+  color: var(--ion-color-secondary);
+}
+
+/* Card styles */
+ion-card {
+  --background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+ion-title {
+  font-weight: 600;
+}
+
+/* No seu arquivo de estilos do componente ou global.scss */
+ion-fab-button {
+    --background: transparent; /* Remove o fundo padrão */
+    --box-shadow: none;
+    
+    /* Estilo do container interno (que mostra a cor de fundo) */
+    &::part(native) {
+      background: var(--ion-color-secondary); /* Azul */
+      border-radius: 50%;
+    }
+    
+    /* Cor do ícone */
+    ion-icon {
+      color: var(--ion-color-secondary-contrast) !important; /* Lilás */
+      font-size: 24px;
+    }
+    
+    /* Efeito hover/ativo */
+    &:hover::part(native),
+    &:active::part(native) {
+      opacity: 0.9;
+      transform: scale(0.95);
+    }
+  }
+
+/* Custom utility classes */
+.text-primary {
+  color: var(--ion-color-primary);
+}
+
+.bg-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-primary) 0%,
+    var(--ion-color-secondary) 100%
+  );
+}
+
+/* Ionic core CSS (keep these imports after your customizations) */
+@import "@ionic/angular/css/core.css";
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
 
-/* Optional CSS utils that can be commented out */
+/* Optional CSS utils */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* Ionic Dark Mode (system preference based) */
+@import "@ionic/angular/css/palettes/dark.system.css";
