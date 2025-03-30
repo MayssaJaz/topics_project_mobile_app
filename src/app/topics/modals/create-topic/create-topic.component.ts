@@ -11,17 +11,16 @@ import {
 } from '@angular/forms';
 import { TopicService } from 'src/app/services/topic.service';
 import { ModalController } from '@ionic/angular/standalone';
-import { Topic } from 'src/app/models/topic';
+import { Category, ReactionsType, Topic } from 'src/app/models/topic';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Observable, filter, firstValueFrom, map, of } from 'rxjs';
-import { Category } from 'src/app/models/topic';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from '@angular/fire/auth';
 import { Client } from 'src/app/models/client';
 import { addIcons } from 'ionicons';
 import { closeCircle } from 'ionicons/icons';
-import { AlertComponent } from '../../alert/alert.component';
+import { AlertComponent } from '../../components/alert/alert.component';
 import { ToastService } from 'src/app/services/toast.service';
 
 addIcons({
@@ -388,11 +387,22 @@ export class CreateTopicModal implements OnInit {
           owner: ownerId,
           description: this.topicForm.value.description!,
           category: (this.topicForm.value.category as Category)!,
+          reactions: this.initializeReactions()
+
         },
         this.selectedFile ?? undefined
       );
     }
     this.modalCtrl.dismiss();
+  }
+
+  initializeReactions(): Record<ReactionsType, string[]> {
+    return {
+      [ReactionsType.LOVE]: [],
+      [ReactionsType.THUMBS_UP]: [],
+      [ReactionsType.THUMBS_DOWN]: [],
+      [ReactionsType.SAD]: [],
+  };
   }
 
   async showConfirmationPopup(user: Client,  type: 'readers' | 'writers') {

@@ -242,5 +242,9 @@ export class AuthService {
     }
   }
 
+  getUserId(): Observable<string | undefined> {
+    return this.getConnectedUser().pipe(map((user) => user?.uid));
+  }
+  
   constructor() {}
 }

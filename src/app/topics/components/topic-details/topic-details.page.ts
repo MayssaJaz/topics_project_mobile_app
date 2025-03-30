@@ -6,7 +6,7 @@ import { TopicService } from 'src/app/services/topic.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
 import { PopoverController } from '@ionic/angular/standalone';
-import { CreatePostModal } from '../modals/create-post/create-post.component';
+import { CreatePostModal } from '../../modals/create-post/create-post.component';
 import { Post } from 'src/app/models/post';
 import { addIcons } from 'ionicons';
 import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
