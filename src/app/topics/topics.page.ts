@@ -10,11 +10,12 @@ import { ModalController, PopoverController } from '@ionic/angular/standalone';
 import { UserPopoverComponent } from './components/popover/user-management/user-management.component';
 import { CreateTopicModal } from './modals/create-topic/create-topic.component';
 import { ItemManagementPopover } from './components/popover/item-management/item-management.component';
-import { Topic } from '../models/topic';
+import { Topic, TopicPermission } from '../models/topic';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { firstValueFrom, tap } from 'rxjs';
+import { firstValueFrom, Observable, tap } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ReactionsComponent } from './components/reactions/reactions.component';
+import { HasTopicPermissionPipe } from './topic-permission.pipe';
 
 addIcons({
   addOutline,
@@ -25,12 +26,16 @@ addIcons({
 @Component({
   selector: 'app-home',
   template: `
-    <ion-header [translucent]="true">
+    <ion-header>
       <ion-toolbar>
-        <ion-breadcrumbs>
-          <ion-breadcrumb routerLink="">Book Discussion</ion-breadcrumb>
-        </ion-breadcrumbs>
-
+        <ion-buttons slot="start">
+          <ion-img
+            src="assets/img/logo.png"
+            alt="Book's Club"
+            class="header-logo"
+          ></ion-img>
+        </ion-buttons>
+        <ion-title>Book's Club</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="presentUserPopover($event)">
             <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
@@ -40,63 +45,36 @@ addIcons({
     </ion-header>
 
     <ion-content [fullscreen]="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Books</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
       <ion-list *ngIf="!loading(); else loadingTemplate">
         @for(topic of topics(); track topic.id) {
-        <ion-card>
-          <ion-item id="edit-bar">
+        <ion-card class="book-card">
+          <ion-item lines="none">
+            <ion-label>
+              <ion-card-title>{{ topic.name }}</ion-card-title>
+              <ion-card-subtitle>{{ topic.category }}</ion-card-subtitle>
+            </ion-label>
             <ion-button
-              slot="start"
+              *ngIf="
+                (topic | hasTopicPermission : 'edit' | async) ||
+                (topic | hasTopicPermission : 'delete' | async)
+              "
               fill="clear"
-              id="click-trigger"
               (click)="
                 presentTopicManagementPopover($event, topic);
                 $event.stopPropagation()
               "
-              aria-label="open topic management popover"
-              data-cy="open-topic-management-popover"
+              aria-label="Manage topic"
             >
-              <ion-icon
-                slot="icon-only"
-                color="medium"
-                name="ellipsis-vertical"
-              ></ion-icon>
+              <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
             </ion-button>
           </ion-item>
 
-          <img alt="Book Cover" [src]="topic.cover" class="full-width-image" />
-
-          <ion-item [routerLink]="['/topics/' + topic.id]" button>
-            <ion-grid>
-              <ion-row>
-                <ion-col>
-                  <ion-card-title>{{ topic.name }}</ion-card-title>
-                </ion-col>
-              </ion-row>
-
-              <ion-row>
-                <ion-col>
-                  <ion-card-subtitle>{{ topic.category }}</ion-card-subtitle>
-                </ion-col>
-              </ion-row>
-
-              <ion-row>
-                <ion-col>
-                  <h3>Summary:</h3>
-                </ion-col>
-              </ion-row>
-              <ion-row>
-                <ion-col>
-                  <ion-card-content> {{ topic.description }} </ion-card-content>
-                </ion-col>
-              </ion-row>
-            </ion-grid>
-          </ion-item>
+          <img
+            *ngIf="topic.cover"
+            [src]="topic.cover"
+            alt="Book Cover"
+            class="book-cover"
+          />
           <ion-item>
             <ion-row
               style="width: 100%; display: flex; justify-content: space-between;"
@@ -166,11 +144,21 @@ addIcons({
               </ion-col>
             </ion-row>
           </ion-item>
+          <ion-item [routerLink]="['/topics/' + topic.id]" class="summary-item">
+            <ion-grid>
+              <h3>Summary:</h3>
+              {{ topic.description }}
+            </ion-grid>
+          </ion-item>
         </ion-card>
         } @empty {
-        <ion-img class="image" src="assets/img/no_data.svg" alt=""></ion-img>
+        <div class="empty-state">
+          <ion-img src="assets/img/no_data.svg" alt="No books found"></ion-img>
+          <ion-text color="medium">No books added yet</ion-text>
+        </div>
         }
       </ion-list>
+
       <ng-template #loadingTemplate>
         <ion-list>
           <ion-list-header>
@@ -206,12 +194,9 @@ addIcons({
           </ion-item>
         </ion-list>
       </ng-template>
+
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-        <ion-fab-button
-          data-cy="open-create-topic-modal-button"
-          aria-label="open add topic modal"
-          (click)="openModal()"
-        >
+        <ion-fab-button aria-label="Add new book" (click)="openModal()">
           <ion-icon name="add-outline"></ion-icon>
         </ion-fab-button>
       </ion-fab>
@@ -219,25 +204,65 @@ addIcons({
   `,
   styles: [
     `
-      .image::part(image) {
-        width: 50%;
-        margin: auto;
+      /* Header adjustments */
+      ion-header {
+        ion-toolbar {
+          &:first-child {
+            padding-top: var(--ion-safe-area-top);
+          }
+        }
       }
-      .loading-spinner {
-        display: block;
-        margin: auto;
-        margin-top: 50px;
+
+      /* Book card styles */
+      .book-card {
+        margin: 16px;
+        border: 1px solid var(--ion-border-color);
       }
-      .full-width-image {
+
+      /* Rest of your existing styles... */
+      .header-logo {
+        width: 30px;
+        height: 30px;
+        margin-right: 8px;
+      }
+
+      .book-cover {
+        background: none !important;
         width: 100%;
-        max-height: 500px;
-        object-fit: contain;
-        display: block;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
       }
-      #edit-bar {
-        padding-bottom: 2%;
+
+      .summary-item {
+        --padding-start: 16px;
+        --padding-end: 16px;
+        --inner-padding-end: 0;
+
+        ion-card-content {
+          white-space: pre-line;
+          line-height: 1.5;
+        }
+      }
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 60vh;
+        text-align: center;
+
+        ion-img {
+          width: 50%;
+          max-width: 200px;
+          opacity: 0.7;
+          margin-bottom: 16px;
+        }
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 576px) {
+        .book-card {
+          margin: 8px;
+        }
       }
 
       .writers-readers-avatars {
@@ -270,7 +295,14 @@ addIcons({
       }
     `,
   ],
-  imports: [IonicModule, CommonModule, RouterLink, ReactionsComponent],
+  imports: [
+    IonicModule,
+    CommonModule,
+    RouterLink,
+    ReactionsComponent,
+    HasTopicPermissionPipe,
+  ],
+  standalone: true,
 })
 export class TopicsPage implements OnInit {
   private readonly topicService = inject(TopicService);

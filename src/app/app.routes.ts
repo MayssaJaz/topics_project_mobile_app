@@ -24,7 +24,7 @@ export const routes: Routes = [
   {
     path: 'topics/:id',
     loadComponent: () =>
-      import('./topics/components/topic-details/topic-details.page').then(
+      import('./topics/topic-details/topic-details.page').then(
         (m) => m.TopicDetailsPage
       ),
   },
@@ -49,5 +49,10 @@ export const routes: Routes = [
   {
     path: 'forget-password',
     loadComponent: () => import('./forget-password/forget-password.page').then( m => m.ForgetPasswordPage)
+
+  },
+  {
+    path: 'management',
+    loadComponent: () => import('./management/management.page').then( m => m.ManagementPage)
   },
 ];

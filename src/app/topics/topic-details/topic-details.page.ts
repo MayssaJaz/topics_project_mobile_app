@@ -6,17 +6,17 @@ import { TopicService } from 'src/app/services/topic.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
 import { PopoverController } from '@ionic/angular/standalone';
-import { CreatePostModal } from '../../modals/create-post/create-post.component';
+import { CreatePostModal } from '../modals/create-post/create-post.component';
 import { Post } from 'src/app/models/post';
 import { addIcons } from 'ionicons';
 import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
-import { ItemManagementPopover } from '../popover/item-management/item-management.component';
+import { ItemManagementPopover } from '../components/popover/item-management/item-management.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { collection, collectionData, Firestore } from '@angular/fire/firestore';
 import { Observable, of, switchMap, tap } from 'rxjs';
 import { Topic, TopicPermission } from 'src/app/models/topic';
 import { AuthService } from 'src/app/services/auth.service';
-import { UserPopoverComponent } from '../popover/user-management/user-management.component';
+import { UserPopoverComponent } from '../components/popover/user-management/user-management.component';
 
 addIcons({ addOutline, chevronForward, ellipsisVertical });
 
@@ -121,7 +121,7 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
           aria-label="open add post modal"
           (click)="openModal()"
         >
-          <ion-icon name="add-outline"></ion-icon>
+          <ion-icon class="add-outline-icon" name="add-outline"></ion-icon>
         </ion-fab-button>
       </ion-fab>
     </ion-content>

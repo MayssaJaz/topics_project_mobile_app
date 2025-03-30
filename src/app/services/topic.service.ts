@@ -111,7 +111,7 @@ export class TopicService {
         posts: [],
       });
 
-      this.toastService.presentToast('Topic added successfully!', 'success');
+      this.toastService.presentToast('Book added successfully!', 'success');
     } catch (error) {
       console.error('Error adding topic:', error);
       this.toastService.presentToast(
@@ -125,56 +125,101 @@ export class TopicService {
     return this._authService.getConnectedUser().pipe(map((user) => user?.uid));
   }
 
-  editTopic(topic: Topic): void {
-    setDoc(doc(this.firestore, `topics/${topic.id}`), topic)
-    .then(() => {
-      this.toastService.presentToast('Topic edited successfully!', 'warning');
-    })
-    .catch((error) => {
-      this.toastService.presentToast('Error updating topic: ' + error.message, 'danger');
-    });
+  async editTopic(topic: Topic,
+    selectedFile?: File): Promise<void> {
+    try {
+      let cover = '';
+      if (selectedFile) {
+        const fileUploadResult = await this.uploadFile(selectedFile);
+
+        if (fileUploadResult instanceof Error) {
+          throw fileUploadResult;
+        } else {
+          cover = fileUploadResult;
+        }
+      }
+
+      topic.cover = cover;
+
+      await setDoc(doc(this.firestore, `topics/${topic.id}`), topic);
+
+      this.toastService.presentToast('Book edited successfully!', 'success');
+
+    } catch (error) {
+      
+      console.error('Error editing topic:', error);
+      this.toastService.presentToast(
+        'Failed to edit your book',
+        'danger'
+      );
+    }
   }
 
-  editTopicReactions(topicId: string, reactions: Record<ReactionsType, string[]>): void {
-    const topicRef = doc(this.firestore, `topics/${topicId}`);
-    updateDoc(topicRef, {
-      reactions: reactions
-    })
-      .then(() => {
-        this.toastService.presentToast('Reactions updated successfully!', 'success');
-      })
-      .catch((error) => {
-        this.toastService.presentToast('Error updating reactions: ' + error.message, 'danger');
-      });
+  async editTopicReactions(topicId: string, reactions: Record<ReactionsType, string[]>): Promise<void> {
+    try {
+      const topicRef = doc(this.firestore, `topics/${topicId}`);
+      await updateDoc(topicRef, { reactions });
+      this.toastService.presentToast('Reactions updated successfully!', 'success');
+    } catch (error) {
+      console.error('Error updating reactions:', error);
+      this.toastService.presentToast(
+        'Failed to edit reactions on your book',
+        'danger'
+      );
+    }
   }
 
-  removeTopic(topic: Topic): void {
-    deleteDoc(doc(this.firestore, `topics/${topic.id}`));
-    this.toastService.presentToast('Topic deleted successfully!', 'danger').then(() => {
-      this.toastService.presentToast('Topic removed successfully!', 'warning');
-    })
-    .catch((error) => {
-      this.toastService.presentToast('Error removing topic: ' + error.message, 'danger');
-    });
+  async removeTopic(topic: Topic): Promise<void> {
+    try {
+      await deleteDoc(doc(this.firestore, `topics/${topic.id}`));
+      this.toastService.presentToast('Book removed successfully!', 'success');
+    } catch (error) {
+      console.error('Error removing topic:', error);
+      this.toastService.presentToast(
+        'Failed to removing your book',
+        'danger'
+      );
+    }
   }
 
   async addPost(topicId: string, post: Omit<Post, 'id'>): Promise<void> {
-    const postsCollectionRef = collection(
-      this.firestore,
-      `topics/${topicId}/posts`
-    );
-    await addDoc(postsCollectionRef, post);
+    try {
+      const postsCollectionRef = collection(this.firestore, `topics/${topicId}/posts`);
+      await addDoc(postsCollectionRef, post);
+      this.toastService.presentToast('Comment added successfully!', 'success');
+    } catch (error) {
+      console.error('Error adding post:', error);
+      this.toastService.presentToast(
+        'Failed to add your comment',
+        'danger'
+      );
+    }
   }
 
   async editPost(topicId: string, post: Post): Promise<void> {
-    await setDoc(
-      doc(this.firestore, `topics/${topicId}/posts/${post.id}`),
-      post
-    );
+    try {
+      await setDoc(doc(this.firestore, `topics/${topicId}/posts/${post.id}`), post);
+      this.toastService.presentToast('Comment updated successfully!', 'success');
+    } catch (error) {
+      console.error('Error editing post:', error);
+      this.toastService.presentToast(
+        'Failed to edit your comment',
+        'danger'
+      );
+    }
   }
 
-  removePost(topicId: string, post: Post): void {
-    deleteDoc(doc(this.firestore, `topics/${topicId}/posts/${post.id}`));
+  async removePost(topicId: string, post: Post): Promise<void> {
+    try {
+      await deleteDoc(doc(this.firestore, `topics/${topicId}/posts/${post.id}`));
+      this.toastService.presentToast('Commment removed successfully!', 'success');
+    } catch (error) {
+      console.error('Error removing post:', error);
+      this.toastService.presentToast(
+        'Failed to remove your comment',
+        'danger'
+      );
+    }
   }
   
 }
