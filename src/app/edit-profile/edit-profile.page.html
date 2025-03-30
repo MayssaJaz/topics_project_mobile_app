@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
+      <ion-button (click)="cancel()">
         <ion-icon name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -35,6 +35,9 @@
         placeholder="Your family name"
         [errorText]="familyNameErrorText()"
       ></ion-input>
+      <ion-button expand="full" fill="clear" (click)="forgotPassword()"
+        >Reset your password?</ion-button
+      >
 
       <ion-row class="ion-justify-content-end">
         <ion-col size="auto">

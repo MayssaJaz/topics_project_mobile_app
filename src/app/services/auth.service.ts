@@ -106,7 +106,23 @@ export class AuthService {
   }
 
   sendResetPasswordLink(email: string) {
-    return sendPasswordResetEmail(this.auth, email);
+    console.log(email);
+    return sendPasswordResetEmail(this.auth, email)
+      .then(() => {
+        this.toastService.presentToast(
+          'Reset password link sent to your email',
+          'success'
+        );
+        this.logout();
+      })
+      .catch((error) => {
+        this.toastService.presentToast(
+          'Error sending password reset email. Please verify your email address.',
+          'danger'
+        );
+        console.error();
+        return Promise.reject(error);
+      });
   }
 
   getUsersByPartialNameOrEmail(
@@ -245,6 +261,6 @@ export class AuthService {
   getUserId(): Observable<string | undefined> {
     return this.getConnectedUser().pipe(map((user) => user?.uid));
   }
-  
+
   constructor() {}
 }

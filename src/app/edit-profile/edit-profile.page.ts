@@ -35,7 +35,9 @@ export class EditProfilePage {
   private familyName: string = '';
   private uid: string = '';
   private logo: string = '';
+  private email = '';
   private readonly modalCtrl = inject(ModalController);
+
   loading = signal<boolean>(true);
 
   get logoSrc(): string {
@@ -49,6 +51,7 @@ export class EditProfilePage {
             this.uid = user.uid;
             this.name = userDetails.name;
             this.familyName = userDetails.family_name;
+            this.email = userDetails.email;
             this.logo = userDetails.logo || '';
             this.userForm.patchValue({
               name: this.name,
@@ -124,10 +127,6 @@ export class EditProfilePage {
     );
   }
 
-  goBack(): void {
-    this.location.back();
-  }
-
   async openModal(): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: AddPictureComponent,
@@ -142,5 +141,9 @@ export class EditProfilePage {
 
   editProfilePicture(): void {
     this.openModal();
+  }
+
+  async forgotPassword(): Promise<void> {
+    await this._authService.sendResetPasswordLink(this.email);
   }
 }

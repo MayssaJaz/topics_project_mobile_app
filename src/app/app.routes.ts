@@ -46,4 +46,8 @@ export const routes: Routes = [
     path: 'edit-profile',
     loadComponent: () => import('./edit-profile/edit-profile.page').then( m => m.EditProfilePage)
   },
+  {
+    path: 'forget-password',
+    loadComponent: () => import('./forget-password/forget-password.page').then( m => m.ForgetPasswordPage)
+  },
 ];
