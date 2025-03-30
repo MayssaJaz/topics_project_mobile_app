@@ -48,7 +48,7 @@ addIcons({
       <ion-list *ngIf="!loading(); else loadingTemplate">
         @for(topic of topics(); track topic.id) {
         <ion-card class="book-card">
-          <ion-item lines="none">
+          <ion-item lines="none" class="bg-gradient">
             <ion-label>
               <ion-card-title>{{ topic.name }}</ion-card-title>
               <ion-card-subtitle>{{ topic.category }}</ion-card-subtitle>
@@ -144,7 +144,11 @@ addIcons({
               </ion-col>
             </ion-row>
           </ion-item>
-          <ion-item [routerLink]="['/topics/' + topic.id]" class="summary-item">
+          <ion-item
+            lines="none"
+            [routerLink]="['/topics/' + topic.id]"
+            class="summary-item"
+          >
             <ion-grid>
               <h3>Summary:</h3>
               {{ topic.description }}
@@ -210,6 +214,24 @@ addIcons({
           &:first-child {
             padding-top: var(--ion-safe-area-top);
           }
+        }
+      }
+
+      ion-item.bg-gradient {
+
+        &::part(native) {
+          background: linear-gradient(135deg, #b3dbff 0%, #9f7aea 100%);
+          border-radius: 12px;
+          padding: 8px 16px; 
+        }
+
+        ion-label {
+          color: #2d3748; 
+        }
+
+        ion-card-title,
+        ion-card-subtitle {
+          color: inherit; 
         }
       }
 
