@@ -68,24 +68,20 @@ ion-title {
   font-weight: 600;
 }
 
-/* No seu arquivo de estilos do componente ou global.scss */
 ion-fab-button {
-    --background: transparent; /* Remove o fundo padrão */
+    --background: transparent; 
     --box-shadow: none;
     
-    /* Estilo do container interno (que mostra a cor de fundo) */
     &::part(native) {
-      background: var(--ion-color-secondary); /* Azul */
+      background: var(--ion-color-secondary); 
       border-radius: 50%;
     }
     
-    /* Cor do ícone */
     ion-icon {
-      color: var(--ion-color-secondary-contrast) !important; /* Lilás */
+      color: var(--ion-color-secondary-contrast) !important; 
       font-size: 24px;
     }
     
-    /* Efeito hover/ativo */
     &:hover::part(native),
     &:active::part(native) {
       opacity: 0.9;
