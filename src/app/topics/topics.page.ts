@@ -14,7 +14,7 @@ import { Topic } from '../models/topic';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom, tap } from 'rxjs';
 import { AuthService } from '../services/auth.service';
-import { ReactionsComponent } from "./components/reactions/reactions.component";
+import { ReactionsComponent } from './components/reactions/reactions.component';
 
 addIcons({
   addOutline,
@@ -98,11 +98,73 @@ addIcons({
             </ion-grid>
           </ion-item>
           <ion-item>
-          <ion-row>
-            <ion-col>
-              <app-reactions [topic]="topic" [userId]="userId"></app-reactions>
-            </ion-col>
-          </ion-row>
+            <ion-row
+              style="width: 100%; display: flex; justify-content: space-between;"
+            >
+              <ion-col size="auto">
+                <app-reactions
+                  [topic]="topic"
+                  [userId]="userId"
+                ></app-reactions>
+              </ion-col>
+              <ion-col size="auto" class="writers-readers-avatars">
+                <ion-row class="writers-row">
+                  <ion-col size="auto">
+                    <strong>Writers:</strong>
+                  </ion-col>
+                  <ion-col size="auto" class="avatars-row">
+                    <ng-container
+                      *ngIf="
+                        topic.writers && topic.writers.length > 0;
+                        else noWriters
+                      "
+                    >
+                      <ion-avatar
+                        *ngFor="let writer of topic.writers.slice(0, 2)"
+                        class="small-avatar"
+                      >
+                        <img src="assets/img/no_logo.jpg" alt="Writer Avatar" />
+                      </ion-avatar>
+                      <ng-container *ngIf="topic.writers.length > 2">
+                        <span>+{{ topic.writers.length - 2 }}</span>
+                      </ng-container>
+                    </ng-container>
+                    <ng-template #noWriters>
+                      <span>0</span>
+                    </ng-template>
+                  </ion-col>
+                </ion-row>
+                <ion-row class="readers-row">
+                  <ion-col size="auto">
+                    <strong>Readers:</strong>
+                  </ion-col>
+                  <ion-col size="auto" class="avatars-row">
+                    <ng-container
+                      *ngIf="
+                        topic.readers && topic.readers.length > 0;
+                        else noReaders
+                      "
+                    >
+                      <ion-avatar
+                        *ngFor="let reader of topic.readers.slice(0, 2)"
+                        class="small-avatar"
+                      >
+                        <img
+                          src="assets/img/no_logo.jpg"
+                          alt="Readers Avatar"
+                        />
+                      </ion-avatar>
+                      <ng-container *ngIf="topic.readers.length > 2">
+                        <span>+{{ topic.readers.length - 2 }}</span>
+                      </ng-container>
+                    </ng-container>
+                    <ng-template #noReaders>
+                      <span>0</span>
+                    </ng-template>
+                  </ion-col>
+                </ion-row>
+              </ion-col>
+            </ion-row>
           </ion-item>
         </ion-card>
         } @empty {
@@ -177,12 +239,40 @@ addIcons({
       #edit-bar {
         padding-bottom: 2%;
       }
+
+      .writers-readers-avatars {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+
+      .avatars-row {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .small-avatar {
+        margin-left: 6px;
+        width: 20px;
+        height: 20px;
+      }
+
+      .writers-row,
+      .readers-row {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+      ion-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
     `,
   ],
   imports: [IonicModule, CommonModule, RouterLink, ReactionsComponent],
 })
 export class TopicsPage implements OnInit {
-
   private readonly topicService = inject(TopicService);
   private readonly modalCtrl = inject(ModalController);
   private readonly popoverCtrl = inject(PopoverController);
@@ -196,7 +286,6 @@ export class TopicsPage implements OnInit {
 
   async ngOnInit() {
     this.userId = await firstValueFrom(this.authService.getUserId());
-
   }
 
   async openModal(topic?: Topic): Promise<void> {
