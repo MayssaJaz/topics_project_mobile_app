@@ -47,8 +47,8 @@ import { Router } from '@angular/router';
               'Enter a password with at least ' + PASSWORD_MIN_LENGTH + ' characters.'
             "
           ></ion-input>
-          <ion-button expand="full" fill="clear" (click)="forgotPassword()">Mot de passe oublié ?</ion-button>
-          <ion-button expand="full" fill="clear" (click)="goToRegister()">Créer un compte</ion-button>
+          <ion-button expand="full" fill="clear" (click)="forgotPassword()">You forgot your password?</ion-button>
+          <ion-button expand="full" fill="clear" (click)="goToRegister()">Create account</ion-button>
         </ion-content>
       </form>
     `,
@@ -134,6 +134,6 @@ export class LoginPage {
   }
 
   forgotPassword(): void {
-    this.router.navigate(['/password-recover']);
+    this.router.navigate(['/forget-password']);
   }
 }
