@@ -106,7 +106,6 @@ export class AuthService {
   }
 
   sendResetPasswordLink(email: string) {
-    console.log(email);
     return sendPasswordResetEmail(this.auth, email)
       .then(() => {
         this.toastService.presentToast(

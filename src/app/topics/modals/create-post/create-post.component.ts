@@ -70,7 +70,7 @@ export class CreatePostModal implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly modalCtrl = inject(ModalController);
 
-  readonly DESCRIPTION_MAX_LENGTH = 255;
+  readonly DESCRIPTION_MAX_LENGTH = 1000;
   readonly NAME_MIN_LENGTH = 3;
 
   topicId!: string;

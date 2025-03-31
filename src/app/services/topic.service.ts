@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { ReactionsType, Topic, Topics } from '../models/topic';
 import { Post } from '../models/post';
 import { generateUUID } from '../utils/generate-uuid';
-import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
+import { combineLatest, firstValueFrom, map, Observable, of, switchMap } from 'rxjs';
 import {
   Firestore,
   collection,
@@ -15,6 +15,7 @@ import {
   where,
   query,
   updateDoc,
+  getDoc,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { ToastService } from './toast.service';
@@ -65,8 +66,7 @@ export class TopicService {
       })
     );
   }
-  
-  
+
   getById(topicId: string): Observable<Topic | undefined> {
     return docData(doc(this.firestore, `topics/${topicId}`), {
       idField: 'id',
@@ -184,8 +184,29 @@ export class TopicService {
 
   async addPost(topicId: string, post: Omit<Post, 'id'>): Promise<void> {
     try {
+      const currentUser = await firstValueFrom(this._authService.getConnectedUser());
+      
+      if (!currentUser?.uid) {
+        throw new Error('User not authenticated');
+      }
+  
+      const userDoc = await getDoc(doc(this.firestore, `users/${currentUser.uid}`));
+      const userName = userDoc.data()?.['name'] || userDoc.data()?.['email'] || 'Anonymous';
+  
       const postsCollectionRef = collection(this.firestore, `topics/${topicId}/posts`);
-      await addDoc(postsCollectionRef, post);
+      
+      await addDoc(postsCollectionRef, {
+        ...post,
+        authorId: currentUser.uid,
+        authorName: userName,
+        createdAt: new Date(),
+        lastModifiedBy: { 
+          userId: currentUser?.uid,
+          userName: userName
+        },
+        updatedAt: new Date(),
+      });
+  
       this.toastService.presentToast('Comment added successfully!', 'success');
     } catch (error) {
       console.error('Error adding post:', error);
@@ -196,9 +217,30 @@ export class TopicService {
     }
   }
 
+  getPostById(topicId: string, postId: string): Observable<Post | undefined> {
+    const postRef = doc(this.firestore, `topics/${topicId}/posts/${postId}`);
+    return docData(postRef, { idField: 'id' }) as Observable<Post | undefined>;
+  }
+
   async editPost(topicId: string, post: Post): Promise<void> {
     try {
-      await setDoc(doc(this.firestore, `topics/${topicId}/posts/${post.id}`), post);
+      const currentUser = await firstValueFrom(this._authService.getConnectedUser());
+      const userDoc = await getDoc(doc(this.firestore, `users/${currentUser?.uid}`));
+      const userName = userDoc.data()?.['name'] || 'Anonymous';
+  
+      await setDoc(doc(this.firestore, `topics/${topicId}/posts/${post.id}`), {
+        name: post.name,
+        description: post.description,
+        authorId: post.authorId,       
+        authorName: post.authorName,  
+        lastModifiedBy: {             
+          userId: currentUser?.uid,
+          userName: userName
+        },
+        createdAt: post.createdAt,     
+        updatedAt: new Date()          
+      });
+      
       this.toastService.presentToast('Comment updated successfully!', 'success');
     } catch (error) {
       console.error('Error editing post:', error);
