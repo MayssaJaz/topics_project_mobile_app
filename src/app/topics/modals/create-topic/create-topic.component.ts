@@ -72,7 +72,7 @@ addIcons({
           <ion-buttons slot="start">
             <ion-button (click)="cancel()" color="medium">Cancel</ion-button>
           </ion-buttons>
-          <ion-title>Topic</ion-title>
+          <ion-title>Book</ion-title>
           <ion-buttons slot="end">
             <ion-button
               type="submit"

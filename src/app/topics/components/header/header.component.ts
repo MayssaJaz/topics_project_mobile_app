@@ -44,15 +44,6 @@ addIcons({
   `,
   styles: [
     `
-      /* Header adjustments */
-      ion-header {
-        ion-toolbar {
-          &:first-child {
-            padding-top: var(--ion-safe-area-top);
-          }
-        }
-      }
-
       /* Rest of your existing styles... */
       .header-logo {
         width: 30px;

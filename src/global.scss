@@ -9,12 +9,12 @@
 /* Custom color palette based on the logo */
 :root {
   /* Primary color (blue for toolbar) */
-  --ion-color-primary: #b3dbff; /* Light blue */
+  --ion-color-primary: #7ac1ff; /* Light blue */
   --ion-color-primary-rgb: 179, 219, 255;
   --ion-color-primary-contrast: #2d3748; /* Dark text for contrast */
   --ion-color-primary-contrast-rgb: 45, 55, 72;
   --ion-color-primary-shade: #9ec1e6;
-  --ion-color-primary-tint: #bbdfff;
+  --ion-color-primary-tint: #b3dbff;
 
   /* Secondary color (purple for buttons/icons) */
   --ion-color-secondary: #9f7aea; /* Purple */
@@ -47,6 +47,14 @@
 ion-toolbar {
   --background: var(--ion-color-primary);
   --color: var(--ion-color-primary-contrast); /* Dark text */
+}
+
+ion-header {
+  ion-toolbar {
+    &:first-child {
+      padding-top: 10px;
+    }
+  }
 }
 
 ion-button {
@@ -98,7 +106,7 @@ ion-fab-button {
   background: linear-gradient(
     135deg,
     var(--ion-color-secondary) 0%,
-    var(--ion-color-primary) 100%
+    var(--ion-color-primary-tint) 100%
   );
 }
 
