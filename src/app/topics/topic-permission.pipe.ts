@@ -3,6 +3,7 @@ import { AuthService } from '../services/auth.service';
 import { Topic, TopicPermission } from '../models/topic';
 import { Observable, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Timestamp } from '@angular/fire/firestore';
 
 @Pipe({
     name: 'hasTopicPermission',
@@ -21,3 +22,12 @@ import { map } from 'rxjs/operators';
       return new Observable<boolean>((observer) => observer.next(false));
     }
   }
+
+
+@Pipe({ name: 'firestoreDate' })
+export class FirestoreDatePipe implements PipeTransform {
+  transform(value: Timestamp | Date | undefined): Date | null {
+    if (!value) return null;
+    return value instanceof Date ? value : value.toDate();
+  }
+}

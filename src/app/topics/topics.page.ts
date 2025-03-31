@@ -16,6 +16,7 @@ import { firstValueFrom, Observable, tap } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ReactionsComponent } from './components/reactions/reactions.component';
 import { HasTopicPermissionPipe } from './topic-permission.pipe';
+import { HeaderComponent } from "./components/header/header.component";
 
 addIcons({
   addOutline,
@@ -26,23 +27,7 @@ addIcons({
 @Component({
   selector: 'app-home',
   template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-img
-            src="assets/img/logo.png"
-            alt="Book's Club"
-            class="header-logo"
-          ></ion-img>
-        </ion-buttons>
-        <ion-title>Book's Club</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="presentUserPopover($event)">
-            <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <header-component/>
 
     <ion-content [fullscreen]="true">
       <ion-list *ngIf="!loading(); else loadingTemplate">
@@ -220,7 +205,7 @@ addIcons({
       ion-item.bg-gradient {
 
         &::part(native) {
-          background: linear-gradient(135deg, #b3dbff 0%, #9f7aea 100%);
+          background: linear-gradient(135deg, #9f7aea 0%, #b3dbff 100%);
           border-radius: 12px;
           padding: 8px 16px; 
         }
@@ -323,7 +308,8 @@ addIcons({
     RouterLink,
     ReactionsComponent,
     HasTopicPermissionPipe,
-  ],
+    HeaderComponent
+],
   standalone: true,
 })
 export class TopicsPage implements OnInit {

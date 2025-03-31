@@ -23,6 +23,7 @@ export interface Topic {
   name: string;
   readers?: string[]; 
   writers?: string[];
+  posts?: [];
   owner?:string;
   cover?: string;
   master?: string;

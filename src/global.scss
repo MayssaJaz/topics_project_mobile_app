@@ -97,9 +97,38 @@ ion-fab-button {
 .bg-gradient {
   background: linear-gradient(
     135deg,
-    var(--ion-color-primary) 0%,
-    var(--ion-color-secondary) 100%
+    var(--ion-color-secondary) 0%,
+    var(--ion-color-primary) 100%
   );
+}
+
+   /* Book card styles */
+.book-card {
+  margin: 16px;
+  border: 1px solid var(--ion-border-color);
+}
+
+.back-button {
+  --min-height: 56px;
+  --padding-start: 0;
+
+  ion-icon {
+    color: var(--ion-color-primary);
+    font-size: 1.5em;
+    margin-right: 12px;
+  }
+
+  &::part(native) {
+    --detail-icon-opacity: 0;
+    padding-left: 16px;
+  }
+}
+
+ /* Responsive adjustments */
+ @media (max-width: 576px) {
+  .book-card {
+    margin: 8px;
+  }
 }
 
 /* Ionic core CSS (keep these imports after your customizations) */

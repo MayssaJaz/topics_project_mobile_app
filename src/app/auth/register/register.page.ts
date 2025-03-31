@@ -18,6 +18,7 @@ import { filter, map, Observable } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { sendEmailVerification, user } from '@angular/fire/auth';
 import { Router } from '@angular/router';
+import { ToastService } from 'src/app/services/toast.service';
 
 export const emailMatchValidator: ValidatorFn = (
   control: AbstractControl
@@ -107,6 +108,8 @@ export class RegisterPage {
   private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  
   constructor() {}
 
   readonly PASSWORD_MIN_LENGTH = 6;
@@ -241,8 +244,16 @@ export class RegisterPage {
           this.registerForm.value.familyName,
           this.registerForm.value.password
         );
+        this.toastService.presentToast(
+          'Please confirm your email and go back to login',
+          'success'
+        );
       } catch (error) {
         console.log(error);
+        this.toastService.presentToast(
+          'A error happened while creating your accounting. Try again!',
+          'danger'
+        );
       }
     }
   }

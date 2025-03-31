@@ -3,52 +3,60 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { TopicService } from 'src/app/services/topic.service';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import {
+  ActivatedRoute,
+  Router,
+  RouterLink,
+  RouterModule,
+} from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
 import { PopoverController } from '@ionic/angular/standalone';
 import { CreatePostModal } from '../modals/create-post/create-post.component';
 import { Post } from 'src/app/models/post';
 import { addIcons } from 'ionicons';
-import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
+import {
+  addOutline,
+  chevronForward,
+  chevronForwardOutline,
+  chevronBackOutline,
+  ellipsisVertical,
+} from 'ionicons/icons';
 import { ItemManagementPopover } from '../components/popover/item-management/item-management.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { collection, collectionData, Firestore } from '@angular/fire/firestore';
 import { Observable, of, switchMap, tap } from 'rxjs';
 import { Topic, TopicPermission } from 'src/app/models/topic';
 import { AuthService } from 'src/app/services/auth.service';
-import { UserPopoverComponent } from '../components/popover/user-management/user-management.component';
+import { HeaderComponent } from '../components/header/header.component';
 
-addIcons({ addOutline, chevronForward, ellipsisVertical });
+addIcons({
+  addOutline,
+  chevronForward,
+  ellipsisVertical,
+  chevronForwardOutline,
+  chevronBackOutline,
+});
 
 @Component({
   selector: 'app-topic-details',
   template: `
-    <ion-header [translucent]="true">
-      <ion-toolbar>
-        <ion-breadcrumbs>
-          <ion-breadcrumb routerLink="">Topics</ion-breadcrumb>
-          <ion-breadcrumb [routerLink]="'#topics/' + topic()?.id">{{
-            topic()?.name
-          }}</ion-breadcrumb>
-        </ion-breadcrumbs>
-        <ion-buttons slot="end">
-          <ion-button (click)="presentUserPopover($event)">
-            <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <header-component />
 
     <ion-content [fullscreen]="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">{{ topic()?.name }}</ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <ion-item
+        lines="none"
+        class="summary-item"
+        [routerLink]="['/topics']"
+        class="back-button"
+      >
+        <ion-icon slot="start" name="chevron-back-outline"></ion-icon>
+        <ion-label>Back to Book List</ion-label>
+      </ion-item>
+      <h1 class="title-book">Book: {{ topic()?.name }}</h1>
 
       <ion-list *ngIf="!loading(); else loadingTemplate">
         @for(post of posts(); track post.id) {
-        <ion-item>
+        <ion-item lines="none" class="bg-gradient">
           <ion-button
             *ngIf="canEdit$ | async"
             slot="start"
@@ -63,7 +71,17 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
               name="ellipsis-vertical"
             ></ion-icon
           ></ion-button>
-          <ion-label>{{ post.name }}</ion-label>
+
+          <ion-label (click)="navigateToPost(post.id, topicId)" class="clickable-label">
+            {{ post.name }}
+          </ion-label>
+
+          <ion-icon
+            slot="end"
+            name="chevron-forward-outline"
+            (click)="navigateToPost(post.id, topicId)"
+          >
+          </ion-icon>
         </ion-item>
         } @empty {
         <ion-img
@@ -128,6 +146,25 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
   `,
   styles: [
     `
+      ion-item.bg-gradient {
+        background: transparent;
+        border-color: transparent;
+        margin: 12px 8px;
+        &::part(native) {
+          background: linear-gradient(135deg, #9f7aea 0%, #b3dbff 100%);
+          border-radius: 12px;
+          padding: 8px 16px;
+        }
+
+        ion-label {
+          color: #2d3748;
+        }
+
+        ion-card-title,
+        ion-card-subtitle {
+          color: inherit;
+        }
+      }
       .image::part(image) {
         width: 50%;
         margin: auto;
@@ -137,10 +174,20 @@ addIcons({ addOutline, chevronForward, ellipsisVertical });
         margin: auto;
         margin-top: 50px;
       }
+
+      .title-book {
+        margin-left: 12px;
+      }
     `,
   ],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterLink],
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    HeaderComponent,
+    RouterLink,
+  ],
 })
 export class TopicDetailsPage implements OnInit {
   private readonly topicService = inject(TopicService);
@@ -149,6 +196,9 @@ export class TopicDetailsPage implements OnInit {
   private readonly popoverCtrl = inject(PopoverController);
   private readonly firestore = inject(Firestore);
   private readonly authService = inject(AuthService);
+
+  constructor(private router: Router) {}
+
   canEdit$: Observable<boolean | undefined> | undefined;
 
   topicId = this.route.snapshot.params['id'];
@@ -171,17 +221,6 @@ export class TopicDetailsPage implements OnInit {
             : of(false)
         )
       );
-  }
-
-  async presentUserPopover(event: Event) {
-    const popover = await this.popoverCtrl.create({
-      component: UserPopoverComponent,
-      event,
-      showBackdrop: true,
-      translucent: true,
-    });
-
-    await popover.present();
   }
 
   getAllPosts(): Observable<Post[]> {
@@ -217,5 +256,9 @@ export class TopicDetailsPage implements OnInit {
     if (data?.action === 'remove')
       this.topicService.removePost(this.topicId, post);
     else if (data?.action === 'edit') this.openModal(post);
+  }
+
+  navigateToPost(postId: string, topicId: string) {
+    this.router.navigate(['/topics', topicId, 'posts', postId]);
   }
 }

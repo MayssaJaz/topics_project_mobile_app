@@ -55,4 +55,8 @@ export const routes: Routes = [
     path: 'management',
     loadComponent: () => import('./management/management.page').then( m => m.ManagementPage)
   },
+  {
+    path: 'topics/:topicId/posts/:postId',
+    loadComponent: () => import('./topics/post-details/post-details.page').then( m => m.PostDetailsPage)
+  },
 ];

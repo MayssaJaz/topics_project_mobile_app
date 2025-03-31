@@ -161,7 +161,7 @@ export class CreateTopicModal implements OnInit {
   private alertService = inject(AlertComponent);
 
   readonly NAME_MIN_LENGTH = 3;
-  readonly DESCRIPTION_MIN_LENGTH = 20;
+  readonly DESCRIPTION_MIN_LENGTH = 5;
   readonly USER_SEARCH_MIN_LENGTH = 3;
 
   selectedFile: File | null = null;
@@ -173,11 +173,32 @@ export class CreateTopicModal implements OnInit {
 
   topic: Topic | undefined;
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     if (this.topic) {
       this.topicNameControl?.setValue(this.topic.name);
       this.topicDescriptionControl?.setValue(this.topic.description);
       this.topicCategoryControl?.setValue(this.topic.category);
+      
+      if (this.topic.cover) {
+
+        try {
+          this.selectedFile = await this.urlToFile(
+            this.topic.cover, 
+            'book-cover.jpg', 
+            'image/jpeg'
+          );
+          
+          const reader = new FileReader();
+          reader.onload = () => {
+            this.imagePreview = reader.result;
+          };
+          reader.readAsDataURL(this.selectedFile);
+        } catch (error) {
+          console.error('Error loading cover image:', error);
+          this.toastService.presentToast('Error loading cover image', 'danger');
+        }
+      }
+
 
       if (this.topic.readers?.length) {
         this.loadUsersByIds(this.topic.readers, 'readers');
@@ -187,6 +208,12 @@ export class CreateTopicModal implements OnInit {
         this.loadUsersByIds(this.topic.writers, 'writers');
       }
     }
+  }
+
+  async urlToFile(url: string, filename: string, mimeType: string): Promise<File> {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: mimeType });
   }
 
   loadUsersByIds(userIds: string[], type: 'readers' | 'writers') {
