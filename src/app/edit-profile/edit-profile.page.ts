@@ -7,15 +7,14 @@ import {
   TouchedChangeEvent,
   Validators,
 } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { CommonModule, Location } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { arrowBack, createOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
-import { ModalController } from '@ionic/angular/standalone';
 import { AddPictureComponent } from '../topics/modals/add-picture/add-picture.component';
+import { ModalController, IonContent, IonHeader, IonToolbar, IonButton, IonButtons, IonInput, IonIcon, IonRow, IonCol, IonSpinner} from '@ionic/angular/standalone';
 
 addIcons({ createOutline, arrowBack });
 
@@ -24,7 +23,7 @@ addIcons({ createOutline, arrowBack });
   templateUrl: './edit-profile.page.html',
   styleUrls: ['./edit-profile.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [IonRow,  CommonModule, ReactiveFormsModule, IonContent, IonHeader, IonToolbar, IonButton, IonButtons, IonInput, IonIcon, IonRow, IonCol, IonSpinner],
 })
 export class EditProfilePage {
   private readonly fb = inject(FormBuilder);

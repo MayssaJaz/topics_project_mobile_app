@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
   FormBuilder,
-  FormsModule,
   ReactiveFormsModule,
   StatusChangeEvent,
   TouchedChangeEvent,
@@ -11,12 +10,10 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput} from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/services/auth.service';
 import { filter, map, Observable } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { sendEmailVerification, user } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -30,7 +27,7 @@ export const emailMatchValidator: ValidatorFn = (
 
 @Component({
   selector: 'app-register',
-  imports: [IonicModule, ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput],
   template: `
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <ion-header>

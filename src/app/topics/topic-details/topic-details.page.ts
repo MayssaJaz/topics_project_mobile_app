@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { TopicService } from 'src/app/services/topic.service';
 import {
   ActivatedRoute,
@@ -9,8 +8,6 @@ import {
   RouterLink,
   RouterModule,
 } from '@angular/router';
-import { ModalController } from '@ionic/angular/standalone';
-import { PopoverController } from '@ionic/angular/standalone';
 import { CreatePostModal } from '../modals/create-post/create-post.component';
 import { Post } from 'src/app/models/post';
 import { addIcons } from 'ionicons';
@@ -28,7 +25,22 @@ import { Observable, of, switchMap, tap } from 'rxjs';
 import { Topic, TopicPermission } from 'src/app/models/topic';
 import { AuthService } from 'src/app/services/auth.service';
 import { HeaderComponent } from '../components/header/header.component';
-
+import {
+  ModalController,
+  PopoverController,
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonList,
+  IonItem,
+  IonImg,
+  IonListHeader,
+  IonSkeletonText,
+  IonFab,
+  IonFabButton,
+  IonLabel,
+  IonThumbnail,
+} from '@ionic/angular/standalone';
 addIcons({
   addOutline,
   chevronForward,
@@ -72,7 +84,10 @@ addIcons({
             ></ion-icon
           ></ion-button>
 
-          <ion-label (click)="navigateToPost(post.id, topicId)" class="clickable-label">
+          <ion-label
+            (click)="navigateToPost(post.id, topicId)"
+            class="clickable-label"
+          >
             {{ post.name }}
           </ion-label>
 
@@ -182,11 +197,22 @@ addIcons({
   ],
   standalone: true,
   imports: [
-    IonicModule,
     CommonModule,
     FormsModule,
     HeaderComponent,
     RouterLink,
+    IonContent,
+    IonButton,
+    IonIcon,
+    IonList,
+    IonItem,
+    IonImg,
+    IonListHeader,
+    IonSkeletonText,
+    IonFab,
+    IonFabButton,
+    IonLabel,
+    IonThumbnail,
   ],
 })
 export class TopicDetailsPage implements OnInit {

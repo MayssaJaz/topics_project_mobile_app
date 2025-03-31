@@ -3,25 +3,18 @@ import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
   FormBuilder,
-  FormsModule,
   ReactiveFormsModule,
   StatusChangeEvent,
   TouchedChangeEvent,
   Validators,
 } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-import {
-  IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/angular/standalone';
 import { filter, map, Observable } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../services/auth.service';
 import { addIcons } from 'ionicons';
 import { arrowBack } from 'ionicons/icons';
 import { Location } from '@angular/common';
+import { IonContent, IonHeader, IonToolbar, IonButton, IonButtons, IonInput, IonIcon, IonRow, IonCol, IonSpinner} from '@ionic/angular/standalone';
 
 addIcons({ arrowBack });
 
@@ -30,7 +23,7 @@ addIcons({ arrowBack });
   templateUrl: './forget-password.page.html',
   styleUrls: ['./forget-password.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IonContent, IonHeader, IonToolbar, IonButton, IonButtons, IonInput, IonIcon, IonRow, IonCol],
 })
 export class ForgetPasswordPage implements OnInit {
   private readonly fb = inject(FormBuilder);

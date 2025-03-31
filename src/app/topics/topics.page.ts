@@ -1,12 +1,10 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
 import { TopicService } from '../services/topic.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
 import { ToastController } from '@ionic/angular';
-import { ModalController, PopoverController } from '@ionic/angular/standalone';
 import { UserPopoverComponent } from './components/popover/user-management/user-management.component';
 import { CreateTopicModal } from './modals/create-topic/create-topic.component';
 import { ItemManagementPopover } from './components/popover/item-management/item-management.component';
@@ -16,7 +14,31 @@ import { firstValueFrom, Observable, tap } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ReactionsComponent } from './components/reactions/reactions.component';
 import { HasTopicPermissionPipe } from './topic-permission.pipe';
-import { HeaderComponent } from "./components/header/header.component";
+import { HeaderComponent } from './components/header/header.component';
+import {
+  ModalController,
+  PopoverController,
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonRow,
+  IonCol,
+  IonGrid,
+  IonList,
+  IonCardTitle,
+  IonItem,
+  IonAvatar,
+  IonImg,
+  IonText,
+  IonListHeader,
+  IonSkeletonText,
+  IonFab,
+  IonFabButton,
+  IonLabel,
+  IonThumbnail,
+  IonCard,
+  IonCardSubtitle,
+} from '@ionic/angular/standalone';
 
 addIcons({
   addOutline,
@@ -27,7 +49,7 @@ addIcons({
 @Component({
   selector: 'app-home',
   template: `
-    <header-component/>
+    <header-component />
 
     <ion-content [fullscreen]="true">
       <ion-list *ngIf="!loading(); else loadingTemplate">
@@ -203,20 +225,19 @@ addIcons({
       }
 
       ion-item.bg-gradient {
-
         &::part(native) {
           background: linear-gradient(135deg, #9f7aea 0%, #b3dbff 100%);
           border-radius: 12px;
-          padding: 8px 16px; 
+          padding: 8px 16px;
         }
 
         ion-label {
-          color: #2d3748; 
+          color: #2d3748;
         }
 
         ion-card-title,
         ion-card-subtitle {
-          color: inherit; 
+          color: inherit;
         }
       }
 
@@ -303,13 +324,32 @@ addIcons({
     `,
   ],
   imports: [
-    IonicModule,
     CommonModule,
     RouterLink,
     ReactionsComponent,
     HasTopicPermissionPipe,
-    HeaderComponent
-],
+    HeaderComponent,
+    IonContent,
+    IonButton,
+    IonIcon,
+    IonRow,
+    IonCol,
+    IonGrid,
+    IonList,
+    IonCardTitle,
+    IonItem,
+    IonAvatar,
+    IonImg,
+    IonText,
+    IonListHeader,
+    IonSkeletonText,
+    IonFab,
+    IonFabButton,
+    IonLabel,
+    IonThumbnail,
+    IonCard,
+    IonCardSubtitle,
+  ],
   standalone: true,
 })
 export class TopicsPage implements OnInit {

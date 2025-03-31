@@ -6,16 +6,14 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ModalController } from '@ionic/angular/standalone';
-import { IonicModule } from '@ionic/angular';
-
 import {
+  ModalController,
   IonContent,
   IonHeader,
-  IonTitle,
   IonToolbar,
   IonButton,
   IonButtons,
+  IonTitle
 } from '@ionic/angular/standalone';
 import { GoogleStorageService } from 'src/app/services/files.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -23,7 +21,13 @@ import { ToastService } from 'src/app/services/toast.service';
 @Component({
   selector: 'app-add-picture',
   standalone: true,
-  imports: [CommonModule, NgIf, IonicModule, ReactiveFormsModule],
+  imports: [CommonModule, NgIf, ReactiveFormsModule,
+    IonContent,
+    IonHeader,
+    IonToolbar,
+    IonButton,
+    IonButtons,
+    IonTitle],
   template: `
     <form [formGroup]="pictureForm" (ngSubmit)="onSubmit()">
       <ion-header>

@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { IonicModule, PopoverController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import {
@@ -11,6 +10,13 @@ import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
 import { AlertComponent } from '../../alert/alert.component';
 import { ToastService } from 'src/app/services/toast.service';
+import {
+  PopoverController,
+  IonContent,
+  IonIcon,
+  IonList,
+  IonItem,
+} from '@ionic/angular/standalone';
 addIcons({
   personCircleOutline,
   createOutline,
@@ -19,7 +25,13 @@ addIcons({
 
 @Component({
   selector: 'app-user-popover',
-  imports: [IonicModule, CommonModule],
+  imports: [ CommonModule,
+    IonContent,
+    IonIcon,
+    IonList,
+    IonItem,
+  ],
+    standalone: true,
   template: `
     <ion-content class="ion-padding">
       <ion-list>
