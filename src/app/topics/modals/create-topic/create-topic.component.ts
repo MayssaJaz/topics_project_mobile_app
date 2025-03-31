@@ -10,10 +10,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { TopicService } from 'src/app/services/topic.service';
-import { ModalController } from '@ionic/angular/standalone';
 import { Category, ReactionsType, Topic } from 'src/app/models/topic';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import { Observable, filter, firstValueFrom, map, of } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from '@angular/fire/auth';
@@ -22,14 +20,51 @@ import { addIcons } from 'ionicons';
 import { closeCircle } from 'ionicons/icons';
 import { AlertComponent } from '../../components/alert/alert.component';
 import { ToastService } from 'src/app/services/toast.service';
-
+import {
+  ModalController,
+  IonContent,
+  IonHeader,
+  IonToolbar,
+  IonButton,
+  IonButtons,
+  IonInput,
+  IonIcon,
+  IonRow,
+  IonCol,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonTitle,
+  IonChip,
+  IonSelect,
+  IonSelectOption,
+} from '@ionic/angular/standalone';
 addIcons({
   closeCircle,
 });
 
 @Component({
   selector: 'app-create-topic',
-  imports: [ReactiveFormsModule, CommonModule, IonicModule],
+  imports: [
+    ReactiveFormsModule,
+    CommonModule,
+    IonContent,
+    IonHeader,
+    IonToolbar,
+    IonButton,
+    IonButtons,
+    IonInput,
+    IonIcon,
+    IonRow,
+    IonCol,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonTitle,
+    IonChip,
+    IonSelect,
+    IonSelectOption,
+  ],
   template: `
     <form [formGroup]="topicForm" (ngSubmit)="onSubmit()">
       <ion-header>
@@ -178,16 +213,15 @@ export class CreateTopicModal implements OnInit {
       this.topicNameControl?.setValue(this.topic.name);
       this.topicDescriptionControl?.setValue(this.topic.description);
       this.topicCategoryControl?.setValue(this.topic.category);
-      
-      if (this.topic.cover) {
 
+      if (this.topic.cover) {
         try {
           this.selectedFile = await this.urlToFile(
-            this.topic.cover, 
-            'book-cover.jpg', 
+            this.topic.cover,
+            'book-cover.jpg',
             'image/jpeg'
           );
-          
+
           const reader = new FileReader();
           reader.onload = () => {
             this.imagePreview = reader.result;
@@ -199,7 +233,6 @@ export class CreateTopicModal implements OnInit {
         }
       }
 
-
       if (this.topic.readers?.length) {
         this.loadUsersByIds(this.topic.readers, 'readers');
       }
@@ -210,7 +243,11 @@ export class CreateTopicModal implements OnInit {
     }
   }
 
-  async urlToFile(url: string, filename: string, mimeType: string): Promise<File> {
+  async urlToFile(
+    url: string,
+    filename: string,
+    mimeType: string
+  ): Promise<File> {
     const response = await fetch(url);
     const blob = await response.blob();
     return new File([blob], filename, { type: mimeType });
@@ -330,11 +367,15 @@ export class CreateTopicModal implements OnInit {
     const searchTerm = event.target.value.trim();
     if (searchTerm.length >= this.USER_SEARCH_MIN_LENGTH) {
       if (type === 'readers') {
-        this.filteredReaders$ =
-          this.authService.getUsersByPartialNameOrEmail(searchTerm, this.topic);
+        this.filteredReaders$ = this.authService.getUsersByPartialNameOrEmail(
+          searchTerm,
+          this.topic
+        );
       } else {
-        this.filteredWriters$ =
-          this.authService.getUsersByPartialNameOrEmail(searchTerm, this.topic);
+        this.filteredWriters$ = this.authService.getUsersByPartialNameOrEmail(
+          searchTerm,
+          this.topic
+        );
       }
     } else {
       if (type === 'readers') {
@@ -346,14 +387,13 @@ export class CreateTopicModal implements OnInit {
   }
 
   async addUserHandler(user: Client, type: 'readers' | 'writers') {
-
     const isInOppositeList =
-    type === 'readers'
-      ? this.writers.controls.some(ctrl => ctrl.value.uid === user.uid)
-      : this.readers.controls.some(ctrl => ctrl.value.uid === user.uid);
+      type === 'readers'
+        ? this.writers.controls.some((ctrl) => ctrl.value.uid === user.uid)
+        : this.readers.controls.some((ctrl) => ctrl.value.uid === user.uid);
 
     if (isInOppositeList) {
-       await this.showConfirmationPopup(user, type);
+      await this.showConfirmationPopup(user, type);
     } else {
       this.addUser(user, type);
     }
@@ -378,8 +418,10 @@ export class CreateTopicModal implements OnInit {
   removeUser(userId: string | undefined, type: 'readers' | 'writers') {
     const userArray = type === 'readers' ? this.readers : this.writers;
 
-    const index = userArray.controls.findIndex(ctrl => ctrl.value.uid === userId);
-  
+    const index = userArray.controls.findIndex(
+      (ctrl) => ctrl.value.uid === userId
+    );
+
     if (index !== -1) {
       userArray.removeAt(index);
     }
@@ -395,15 +437,17 @@ export class CreateTopicModal implements OnInit {
 
   async onSubmit(): Promise<void> {
     if (this.topic?.id) {
-      this.topicService.editTopic({
-        ...this.topic,
-        name: this.topicForm.value.name!,
-        readers: this.readers.value.map((user: User) => user.uid),
-        writers: this.writers.value.map((user: User) => user.uid),
-        description: this.topicForm.value.description!,
-        category: (this.topicForm.value.category as Category)!,
-      },
-      this.selectedFile ?? undefined);
+      this.topicService.editTopic(
+        {
+          ...this.topic,
+          name: this.topicForm.value.name!,
+          readers: this.readers.value.map((user: User) => user.uid),
+          writers: this.writers.value.map((user: User) => user.uid),
+          description: this.topicForm.value.description!,
+          category: (this.topicForm.value.category as Category)!,
+        },
+        this.selectedFile ?? undefined
+      );
     } else {
       const ownerId = await firstValueFrom(this.getUserId());
 
@@ -415,8 +459,7 @@ export class CreateTopicModal implements OnInit {
           owner: ownerId,
           description: this.topicForm.value.description!,
           category: (this.topicForm.value.category as Category)!,
-          reactions: this.initializeReactions()
-
+          reactions: this.initializeReactions(),
         },
         this.selectedFile ?? undefined
       );
@@ -430,17 +473,23 @@ export class CreateTopicModal implements OnInit {
       [ReactionsType.THUMBS_UP]: [],
       [ReactionsType.THUMBS_DOWN]: [],
       [ReactionsType.SAD]: [],
-  };
+    };
   }
 
-  async showConfirmationPopup(user: Client,  type: 'readers' | 'writers') {
-    await this.alertService.presentAlert(`This user is listed as a ${type.slice(0,type.length -1)} on this book. Are you sure you want to change him for a writer?`, () => {
-      if (type === 'readers') {
-        this.removeUser(user?.uid, 'writers');
-      } else {
-        this.removeUser(user?.uid, 'readers');
+  async showConfirmationPopup(user: Client, type: 'readers' | 'writers') {
+    await this.alertService.presentAlert(
+      `This user is listed as a ${type.slice(
+        0,
+        type.length - 1
+      )} on this book. Are you sure you want to change him for a writer?`,
+      () => {
+        if (type === 'readers') {
+          this.removeUser(user?.uid, 'writers');
+        } else {
+          this.removeUser(user?.uid, 'readers');
+        }
+        this.addUser(user, type);
       }
-      this.addUser(user, type);
-    });
+    );
   }
 }

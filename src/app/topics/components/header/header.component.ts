@@ -1,12 +1,18 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { addOutline, chevronForward, ellipsisVertical } from 'ionicons/icons';
-import { PopoverController } from '@ionic/angular/standalone';
 import { UserPopoverComponent } from '../popover/user-management/user-management.component';
-
+import {
+  PopoverController,
+  IonHeader,
+  IonToolbar,
+  IonButton,
+  IonButtons,
+  IonIcon,
+  IonTitle
+} from '@ionic/angular/standalone';
 
 addIcons({
   addOutline,
@@ -56,15 +62,20 @@ addIcons({
     `,
   ],
   imports: [
-    IonicModule,
     CommonModule,
     RouterLink,
+    IonHeader,
+    IonToolbar,
+    IonButton,
+    IonButtons,
+    IonIcon,
+    IonTitle
+    
   ],
   standalone: true,
 })
 export class HeaderComponent {
   private readonly popoverCtrl = inject(PopoverController);
-
 
   async presentUserPopover(event: Event) {
     const popover = await this.popoverCtrl.create({
@@ -76,5 +87,4 @@ export class HeaderComponent {
 
     await popover.present();
   }
-
 }

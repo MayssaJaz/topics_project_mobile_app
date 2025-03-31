@@ -7,7 +7,6 @@ import {
   TouchedChangeEvent,
   Validators,
 } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { TopicService } from 'src/app/services/topic.service';
 import { ModalController } from '@ionic/angular/standalone';
 import { Post } from 'src/app/models/post';

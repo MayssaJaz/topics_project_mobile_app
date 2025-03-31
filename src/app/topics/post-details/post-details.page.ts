@@ -1,13 +1,8 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { TopicService } from 'src/app/services/topic.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ModalController } from '@ionic/angular/standalone';
-import { PopoverController } from '@ionic/angular/standalone';
-import { CreatePostModal } from '../modals/create-post/create-post.component';
-import { Post } from 'src/app/models/post';
 import { addIcons } from 'ionicons';
 import {
   addOutline,
@@ -18,14 +13,17 @@ import {
   ellipsisVertical,
   personCircleOutline,
 } from 'ionicons/icons';
-import { ItemManagementPopover } from '../components/popover/item-management/item-management.component';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { collection, collectionData, Firestore } from '@angular/fire/firestore';
-import { firstValueFrom, Observable, of, switchMap, tap } from 'rxjs';
-import { Topic, TopicPermission } from 'src/app/models/topic';
-import { AuthService } from 'src/app/services/auth.service';
 import { HeaderComponent } from '../components/header/header.component';
-import { FirestoreDatePipe } from "../topic-permission.pipe";
+import { FirestoreDatePipe } from '../topic-permission.pipe';
+import {
+  ModalController,
+  IonContent,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonChip,
+} from '@ionic/angular/standalone';
 
 addIcons({
   addOutline,
@@ -70,9 +68,10 @@ addIcons({
           <ion-chip color="tertiary" *ngIf="post()?.createdAt">
             <ion-icon name="calendar-outline"></ion-icon>
             <ion-label>
-              {{ post()?.createdAt  | firestoreDate | date : 'mediumDate' }}
+              {{ post()?.createdAt | firestoreDate | date : 'mediumDate' }}
               <span *ngIf="post()?.updatedAt"
-                >(updated: {{ post()?.updatedAt  | firestoreDate | date : 'short' }})</span
+                >(updated:
+                {{ post()?.updatedAt | firestoreDate | date : 'short' }})</span
               >
             </ion-label>
           </ion-chip>
@@ -170,13 +169,17 @@ addIcons({
   ],
   standalone: true,
   imports: [
-    IonicModule,
     CommonModule,
     FormsModule,
     HeaderComponent,
     RouterLink,
-    FirestoreDatePipe
-],
+    FirestoreDatePipe,
+    IonContent,
+    IonIcon,
+    IonItem,
+    IonLabel,
+    IonChip,
+  ],
 })
 export class PostDetailsPage {
   private route = inject(ActivatedRoute);
