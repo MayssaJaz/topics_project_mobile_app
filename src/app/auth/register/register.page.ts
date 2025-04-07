@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import {
   AbstractControl,
   FormBuilder,
@@ -10,12 +10,29 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput} from '@ionic/angular/standalone';
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonButton,
+  IonButtons,
+  IonInput,
+  IonItem,
+  IonIcon,
+  IonLabel,
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { chevronBackOutline } from 'ionicons/icons';
 import { AuthService } from 'src/app/services/auth.service';
 import { filter, map, Observable } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ToastService } from 'src/app/services/toast.service';
+
+addIcons({
+  chevronBackOutline,
+});
 
 export const emailMatchValidator: ValidatorFn = (
   control: AbstractControl
@@ -27,11 +44,30 @@ export const emailMatchValidator: ValidatorFn = (
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonInput],
+  imports: [
+    ReactiveFormsModule,
+    CommonModule,
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    IonButton,
+    IonButtons,
+    IonInput,
+    IonItem,
+    RouterLink,
+    IonIcon,
+    IonLabel,
+  ],
   template: `
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <ion-header>
         <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="cancel()">
+              <ion-icon name="arrow-back"></ion-icon>
+            </ion-button>
+          </ion-buttons>
           <ion-title>register</ion-title>
           <ion-buttons slot="end">
             <ion-button
@@ -99,6 +135,7 @@ export const emailMatchValidator: ValidatorFn = (
       </ion-content>
     </form>
   `,
+  styles: [``],
   standalone: true,
 })
 export class RegisterPage {
@@ -106,7 +143,8 @@ export class RegisterPage {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
-  
+  private readonly location = inject(Location);
+
   constructor() {}
 
   readonly PASSWORD_MIN_LENGTH = 6;
@@ -225,6 +263,10 @@ export class RegisterPage {
     string | null
   > | null {
     return this.registerForm.get('password');
+  }
+
+  cancel(): void {
+    this.location.back();
   }
 
   async onSubmit(): Promise<void> {
