@@ -36,7 +36,7 @@ addIcons({
         <ion-title>Book's Club</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="presentUserPopover($event)">
-            <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
+            <ion-icon class='user-logo' slot="icon-only" name="person-circle-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
@@ -49,6 +49,10 @@ addIcons({
         width: 30px;
         height: 30px;
         margin-right: 8px;
+      }
+      .user-logo {
+        width: 30px;
+        height: 30px;
       }
     `,
   ],

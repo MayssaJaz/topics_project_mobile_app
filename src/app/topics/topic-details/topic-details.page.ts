@@ -41,6 +41,7 @@ import {
   IonLabel,
   IonThumbnail,
 } from '@ionic/angular/standalone';
+import { HasPostPermissionPipe } from "../topic-permission.pipe";
 addIcons({
   addOutline,
   chevronForward,
@@ -70,7 +71,10 @@ addIcons({
         @for(post of posts(); track post.id) {
         <ion-item lines="none" class="bg-gradient">
           <ion-button
-            *ngIf="canEdit$ | async"
+          *ngIf="
+                ( post | hasPostPermission : 'edit' : topic() | async ) ||
+                ( post | hasPostPermission : 'delete' : topic() | async )
+              "
             slot="start"
             fill="clear"
             id="click-trigger"
@@ -213,7 +217,8 @@ addIcons({
     IonFabButton,
     IonLabel,
     IonThumbnail,
-  ],
+    HasPostPermissionPipe
+],
 })
 export class TopicDetailsPage implements OnInit {
   private readonly topicService = inject(TopicService);
@@ -274,7 +279,7 @@ export class TopicDetailsPage implements OnInit {
     const popover = await this.popoverCtrl.create({
       component: ItemManagementPopover,
       event,
-      componentProps: { topic },
+      componentProps: { topic, post },
     });
     await popover.present();
 
