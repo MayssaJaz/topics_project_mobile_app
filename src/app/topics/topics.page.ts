@@ -13,7 +13,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom, Observable, tap } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ReactionsComponent } from './components/reactions/reactions.component';
-import { HasTopicPermissionPipe } from './topic-permission.pipe';
+import {
+  HasTopicPermissionPipe,
+  GetPostsLengthByTopic,
+} from './topic-permission.pipe';
 import { HeaderComponent } from './components/header/header.component';
 import {
   ModalController,
@@ -146,6 +149,23 @@ addIcons({
                     <ng-template #noReaders>
                       <span>0</span>
                     </ng-template>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="auto">
+                    <strong>Posts:</strong>
+                  </ion-col>
+                  <ion-col size="auto">
+                    <ng-container
+                      *ngIf="topic | getPostsLengthByTopic | async as postCount"
+                    >
+                      <span>{{ postCount }}</span>
+                    </ng-container>
+                    <ng-container
+                      *ngIf="(topic | getPostsLengthByTopic | async) === 0"
+                    >
+                      <span>0</span>
+                    </ng-container>
                   </ion-col>
                 </ion-row>
               </ion-col>
@@ -349,6 +369,7 @@ addIcons({
     IonThumbnail,
     IonCard,
     IonCardSubtitle,
+    GetPostsLengthByTopic,
   ],
   standalone: true,
 })

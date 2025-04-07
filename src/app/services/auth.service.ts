@@ -27,6 +27,7 @@ import {
 } from '@angular/fire/firestore';
 import { Topic, TopicPermission } from '../models/topic';
 import { ToastService } from './toast.service';
+import { Post } from '../models/post';
 
 @Injectable({
   providedIn: 'root',
@@ -193,21 +194,55 @@ export class AuthService {
                 return (
                   topic?.owner === user.uid ||
                   topic?.readers?.includes(user.uid) ||
-                  topic?.writers?.includes(user.uid) ||
-                  topic?.master?.includes(user.uid)
+                  topic?.writers?.includes(user.uid)
                 );
 
               case TopicPermission.WRITE:
                 return (
                   topic?.owner === user.uid ||
-                  topic?.writers?.includes(user.uid) ||
-                  topic?.master?.includes(user.uid)
+                  topic?.writers?.includes(user.uid)
                 );
 
-              case TopicPermission.FULL:
+              case TopicPermission.DELETE:
+                return topic?.owner === user.uid;
+
+              default:
+                return false;
+            }
+          })
+        );
+      })
+    );
+  }
+
+  canPerformPostAction(
+    post: Post | null | undefined,
+    topic: Topic | null | undefined,
+    permission: TopicPermission
+  ): Observable<boolean | undefined> {
+    return this.getConnectedUser().pipe(
+      switchMap((user) => {
+        if (!user?.uid) return of(false);
+        const userDocRef = doc(this.firestore, `users/${user.uid}`);
+
+        return docData(userDocRef).pipe(
+          map((userData: any) => {
+            const isSuperAdmin = userData?.role === UserRole.SUPER_ADMIN;
+            if (isSuperAdmin) return true;
+
+            switch (permission) {
+              case TopicPermission.READ:
                 return (
-                  topic?.owner === user.uid || topic?.master?.includes(user.uid)
+                  topic?.owner === user.uid ||
+                  topic?.readers?.includes(user.uid) ||
+                  topic?.writers?.includes(user.uid)
                 );
+
+              case TopicPermission.WRITE:
+                return post?.authorId == user.uid;
+
+              case TopicPermission.DELETE:
+                return post?.authorId == user.uid || topic?.owner == user.uid;
 
               default:
                 return false;

@@ -108,7 +108,6 @@ export class TopicService {
         ...topic,
         id: generateUUID(),
         cover,
-        posts: [],
       });
 
       this.toastService.presentToast('Book added successfully!', 'success');
@@ -206,7 +205,7 @@ export class TopicService {
         },
         updatedAt: new Date(),
       });
-  
+   
       this.toastService.presentToast('Comment added successfully!', 'success');
     } catch (error) {
       console.error('Error adding post:', error);
@@ -220,6 +219,15 @@ export class TopicService {
   getPostById(topicId: string, postId: string): Observable<Post | undefined> {
     const postRef = doc(this.firestore, `topics/${topicId}/posts/${postId}`);
     return docData(postRef, { idField: 'id' }) as Observable<Post | undefined>;
+  }
+
+  getAllPostsByTopicId(topicId: string | undefined): Observable<Post[]> {
+    if (!topicId) {
+      return of([]);
+    }
+  
+    const postsCollection = collection(this.firestore, `topics/${topicId}/posts`);
+    return collectionData(postsCollection, { idField: 'id' }) as Observable<Post[]>;
   }
 
   async editPost(topicId: string, post: Post): Promise<void> {
